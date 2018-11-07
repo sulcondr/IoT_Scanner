@@ -45,6 +45,19 @@ Fakt sám \ldots
 
 Foo bar
 
+\chapter{LoRa}
+\section{Modulace}
+Modulační schéma LoRa je založeno na Chirp Spread Spread Spectrum (Cvrlikající rozprostřené spektrum) modulaci  (Goursaud and Gorce, 2015) a definuje jeden “cvrk” jako jeden symbol  (Semtech, 2015a). Standardní nemodulovaný lineární cvrk se nazývá “základní cvrk” a může být matematicky popsán jako funkce času t takto (Mann and Haykin, 1991):
+\begin{align}x(t)=e^{i(\varphi_{0}+2\pi(\frac{k}{2}t^{2} + f_{0}t))}
+\label{eq:mod1}
+\end{align}
+Kde  $\varphi_{0}$ je počáteční fáze, $k$ je rychlost změny frekvence a $f_{0}$ je počáteční frekvence. Pokud je šířka pásma kanálu $BW$, tak parametry $f_{0}$ a $k$ jsou nastaveny tak, že se frekvence zvětšuje od $f_{0}-\frac{BW}{2}$ po $f_{0}+\frac{BW}{2}$ během periody $T$ cvrku. Tím pádem je $f_{0}=\frac{BW}{2}$ and $k = \frac{BW}{T}$. Doba trvání jednoho cvrku závisí na šířce pásma signálu a na parametru nazývaném činitel rozprostření (Spreading Factor - SF) dle vztahu $T = \frac{2^{SF}}{BW}$ (Seller and Sornin, 2014).
+Vzhledem k tomu, že $x(t + nT) = x(t)$ kde $n\in \mathbb{N}$, celočíselná hodnota $i \in \{0, 1\}^{SF}$ může být namodulována na základní cvrk pomocí časového posunu $\hat{t} = Gray^{-1}(i)\frac{T}{2^{SF}}$ aplikovaného na signál ve vztahu \eqref{eq:mod1},  kde $Gray^{1}$ je dekódování Grayova kódu (Gray, 1953). Touto cestou je symbol v podstatě kvantovaný na $2^{SF}$ časových intervalů rozdělujích šířku pásma, nazýváme je “chipy” a právě ony určují $i$. Při příjmu modulovaného cvrku s neznámým časovým posuvem $x(t + \hat{t})$, může být hodnota cvrku zrekonstruována navzorkováním signálu vzorkovací frekvencí chipů a výpočtem:
+\begin{align}i= Gray(arg \max (\lvert FFT(x(t+ \hat{t}) \odot \overline{x(t)}) \rvert ))
+\label{eq:mod2}
+\end{align}
+
+
 \chapter{Závěr}
 
 Lorep ipsum \cite{doe}
