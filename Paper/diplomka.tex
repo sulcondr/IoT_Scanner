@@ -46,7 +46,8 @@ Fakt sám \ldots
 Foo bar
 
 \chapter{LoRa}
-\section{Modulace}
+\section{Fyzická vrstva (LoRa PHY)}
+\subsection{Modulace}
 Modulační schéma LoRa je založeno na Chirp Spread Spread Spectrum (Cvrlikající rozprostřené spektrum) modulaci  (Goursaud and Gorce, 2015) a definuje jeden “cvrk” jako jeden symbol  (Semtech, 2015a). Standardní nemodulovaný lineární cvrk se nazývá “základní cvrk” a může být matematicky popsán jako funkce času t takto (Mann and Haykin, 1991):
 \begin{align}x(t)=e^{i(\varphi_{0}+2\pi(\frac{k}{2}t^{2} + f_{0}t))}
 \label{eq:mod1}
@@ -57,6 +58,34 @@ Vzhledem k tomu, že $x(t + nT) = x(t)$ kde $n\in \mathbb{N}$, celočíselná ho
 \label{eq:mod2}
 \end{align}
 Kde $\overline{x(t)}$ značí komplexně sdružený základní cvrk, $\odot$ značí multiplikaci po prvcích, $\lvert FFT(x) \rvert$ zančí velikost Rychlé Fourierovi transformace $x$, a $Gray$ je Grayovo kódování. 
+
+\subsection{Prokládání}
+Jako v každé jiné modulaci, musíme i zde počítat s chybami způsobenými šumem, interferencí, a časovými nebo frekvenčními posuny. Tyto chyby mohou způsobit, že hodnota čipu nebude dobře odečtena z modulovaného symbolu. Například poryv šumu může posunout vrchol v FFT spektru na jinou hodnotu chipu a tak jej znehodnotit.\\
+Aby bylo možné minimalizovat dopad poryvů šumu na chybu jen jednoho bitu v symbolu je použito prokládání. Několik chipů je dohromady vepsáno do mřížky $\{0,1\}^{SF x (4 + CR)}$, kde CR (Coding Rate) značí počet paritních bitů a nabývá hodnot 1 až 4. Pokud tedy bude použit $SF = 7$ a $CR =4$ dostaneme matici  $\{0,1\}^{7 x 8}$, příklad je na obrázku \ref{fig:mod1}. K sískání kódové slova je pak potřeba číst bity po diagonále matice. Na rozdíl od patentu LoRy (Seller and Sornin, 2014), kde se uvádí, že směr diagonálního čtení bitů z mřížky je směrem dolů, v praxi lze pozorovat opačný směr. Tímto způsobem tak první chip obsahuje všechny nejméně významné bity (LSB - Least significant) všech kódových slov, druhý čip všechny druhé bity všech slov a tak dále. Díky tomu v případě ztráty celého čipu dojde k chybě jen v jednom bitu na kódové slovo.\\
+Dalším způsobem jak zvýšit odolnost proti rušení vysílání je použití módu redukované rychlosti (reduced rate mode). V případě použití tohoto módu jsou první dvě řady prokládací matice zahozeny a její rozměr se tak změní na $\{0,1\}^{SF-2 x (4 + CR)}$ což způsobí, že z ní nasledně vyčteme o dvě kódová slova méně. Zahozené řádky obsahují nejméně významné bity chipů, které jsou nachylnější k chybám protože odpovídají užším frekvenčním intervalům v FFT spektru. Z toho vyplývá, že mód redukované rychlosti obětuje rychlost přenosu dat ve prospěch odolnosti proti šumu. Hlavička fyzické vrstvy LoRa je v tomto módu vysílána vždy, kdežtkoo užitečná data je v případě použítí SF 11 nebo 12.
+
+\subsection{Kódování}
+Po přečtení kódových slov z prokládací matice mají tato délku $4 + CR$. Kvůli zamezení vzniku stejnosměrné složky byla slova v části rámce s užitečnými daty XOR-ována 9-bitovým lineární posuvným registrem se zpětnou vazbou (LSFR Linear feedback shift register) (whitening). A proto musí po synchronizaci projít stejným procesem znovu. Přesný algoritmus není v patentu určen a jeho výběr je tedy na každém výrobci zvlášť. \\
+Na několika testovacích zařízeních \ref{nejdulzittejsipapir} reverzním inženýrstvým zjistilo použité upraveného $4/(4 + CR)$ Hammingova kódu. Ve výsledku tak z každého kódového slova po dekódování získáme 4 bity dat. Ta jsou pak naparsována du struktury rámce lora.
+
+\subsection{Struktura rámce}
+Na fyzické vrstě LoRa definuje rámec jako strukturu složenou z následujících polí. Pole jsou uvedena ve stejném pořadí jako v rámci.  (Semtech, 2015b, p. 27–29)
+\begin{description}
+\item[Preambule]
+Sekvence základních cvrků, která slouží k časové a frekvenční synchronizaci. Počet cvrků není pevně dán.
+\item[Symboly synchronizace rámce]
+Dva modulované cvrky co mouhou být použity pro identifikaci sítě. Hardwarový přijímač zahodí rámcec, které obsahují synchronizační symboly co neodpovídají jeho nastavení.
+\item[Symboly synchronizace frekvence]
+Dva sdružené cvrky následované sdruženým cvrkem s periodoou $\frac{T}{4}$ určené pro přesnou frekvenční synchronizaci.
+\item[Hlavička (nepoviná)]
+Hlavička obsahuje délku užitečných dat, použitou přenosovou rychlost, indikuje použití Cyklického redundantního součtu (CRC - Cyclic redunduncy check) a jendobajtovou kontrolní sumu hlavičky. Pro modulaci hlavičky je vždy použito $CR =4$ a mód redukované rychlosti. Pokud hlavička vysílána není (implicitní mód) musí mít jak přijímač tak vysílač předem schodně nastavený CR a také zdali je použito CRC.
+\item[Užitečná data]
+Pole o proměnné délce obsahující data vrstvy přístupu k médiu (MAC - Media access control) a případné dvoubajtové CRC těchto dat.
+\end{description}
+\subsection{Struktura hlavičky}
+Délka hlavičky není ve specifikaci nikdy přímo určena. Lze jí však vydedukovat z toho, že hlavička je vždy vysílána v módu redukované rychlosti, má $CR =4$ a SF minimálně 7. Z toho vyplívá že hlavička se musí vejít do mřížky $\{0,1\}^{7-2 x 8)}$ a to odpovídá 5 kódovým slovům. Každé slovo má 8 bitů a dohromady je to bitů 40. Jakékoliv zbývající bity jsou použity pro užitečná data. \\
+Po dekódování díky redundantním bitům dostáváme $40\frac{4}{8} = 20$ bitů nebo 2,5 bajtu. V \ref{nejdulezitejsipapir} experimentálně vyzkoušeli pořadí hlavičky. První bajt udává délku datového obsahu, následuje půlslabika  udávající CR a přítomnost MAC CRC a poslední bajt obsahuje kontrolní součet hlavičky, z něj je však používá jen 5 LSB bitů.
+
 
 \chapter{Závěr}
 
