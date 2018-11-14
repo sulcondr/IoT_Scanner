@@ -1,5 +1,5 @@
 \documentclass{ctuthesis}
-
+\newcommand{\argmax}{\mathop{\mathrm{argmax}}}
 \ctusetup{
 	xdoctype = M,
 	xfaculty = F3,
@@ -50,18 +50,18 @@ Foo bar
 \subsection{Modulace}
 Modulační schéma LoRa je založeno na Chirp Spread Spread Spectrum (Cvrlikající rozprostřené spektrum) modulaci  (Goursaud and Gorce, 2015) a definuje jeden “cvrk” jako jeden symbol  (Semtech, 2015a). Standardní nemodulovaný lineární cvrk se nazývá “základní cvrk” a může být matematicky popsán jako funkce času t takto (Mann and Haykin, 1991):
 \begin{align}x(t)=e^{i(\varphi_{0}+2\pi(\frac{k}{2}t^{2} + f_{0}t))}
-\label{eq:mod1}
+\label{eq:lora1}
 \end{align}
 Kde  $\varphi_{0}$ je počáteční fáze, $k$ je rychlost změny frekvence a $f_{0}$ je počáteční frekvence. Pokud je šířka pásma kanálu $BW$, tak parametry $f_{0}$ a $k$ jsou nastaveny tak, že se frekvence zvětšuje od $f_{0}-\frac{BW}{2}$ po $f_{0}+\frac{BW}{2}$ během periody $T$ cvrku. Tím pádem je $f_{0}=\frac{BW}{2}$ and $k = \frac{BW}{T}$. Doba trvání jednoho cvrku závisí na šířce pásma signálu a na parametru nazývaném činitel rozprostření (Spreading Factor - SF) dle vztahu $T = \frac{2^{SF}}{BW}$ (Seller and Sornin, 2014).
 Vzhledem k tomu, že $x(t + nT) = x(t)$ kde $n\in \mathbb{N}$, celočíselná hodnota $i \in \{0, 1\}^{SF}$ může být namodulována na základní cvrk pomocí časového posunu $\hat{t} = Gray^{-1}(i)\frac{T}{2^{SF}}$ aplikovaného na signál ve vztahu \eqref{eq:mod1},  kde $Gray^{1}$ je dekódování Grayova kódu (Gray, 1953). Touto cestou je symbol v podstatě kvantovaný na $2^{SF}$ časových intervalů rozdělujích šířku pásma, nazýváme je “chipy” a právě ony určují $i$. Při příjmu modulovaného cvrku s neznámým časovým posuvem $x(t + \hat{t})$, může být hodnota cvrku zrekonstruována navzorkováním signálu vzorkovací frekvencí chipů a výpočtem:
 \begin{align}i= Gray(arg \max (\lvert FFT(x(t+ \hat{t}) \odot \overline{x(t)}) \rvert ))
-\label{eq:mod2}
+\label{eq:lora2}
 \end{align}
 Kde $\overline{x(t)}$ značí komplexně sdružený základní cvrk, $\odot$ značí multiplikaci po prvcích, $\lvert FFT(x) \rvert$ zančí velikost Rychlé Fourierovi transformace $x$, a $Gray$ je Grayovo kódování. 
 
 \subsection{Prokládání}
 Jako v každé jiné modulaci, musíme i zde počítat s chybami způsobenými šumem, interferencí, a časovými nebo frekvenčními posuny. Tyto chyby mohou způsobit, že hodnota čipu nebude dobře odečtena z modulovaného symbolu. Například poryv šumu může posunout vrchol v FFT spektru na jinou hodnotu chipu a tak jej znehodnotit.\\
-Aby bylo možné minimalizovat dopad poryvů šumu na chybu jen jednoho bitu v symbolu je použito prokládání. Několik chipů je dohromady vepsáno do mřížky $\{0,1\}^{SF x (4 + CR)}$, kde CR (Coding Rate) značí počet paritních bitů a nabývá hodnot 1 až 4. Pokud tedy bude použit $SF = 7$ a $CR =4$ dostaneme matici  $\{0,1\}^{7 x 8}$, příklad je na obrázku \ref{fig:mod1}. K sískání kódové slova je pak potřeba číst bity po diagonále matice. Na rozdíl od patentu LoRy (Seller and Sornin, 2014), kde se uvádí, že směr diagonálního čtení bitů z mřížky je směrem dolů, v praxi lze pozorovat opačný směr. Tímto způsobem tak první chip obsahuje všechny nejméně významné bity (LSB - Least significant) všech kódových slov, druhý čip všechny druhé bity všech slov a tak dále. Díky tomu v případě ztráty celého čipu dojde k chybě jen v jednom bitu na kódové slovo.\\
+Aby bylo možné minimalizovat dopad poryvů šumu na chybu jen jednoho bitu v symbolu je použito prokládání. Několik chipů je dohromady vepsáno do mřížky $\{0,1\}^{SF x (4 + CR)}$, kde CR (Coding Rate) značí počet paritních bitů a nabývá hodnot 1 až 4. Pokud tedy bude použit $SF = 7$ a $CR =4$ dostaneme matici  $\{0,1\}^{7 x 8}$, příklad je na obrázku \ref{fig:lora1}. K sískání kódové slova je pak potřeba číst bity po diagonále matice. Na rozdíl od patentu LoRy (Seller and Sornin, 2014), kde se uvádí, že směr diagonálního čtení bitů z mřížky je směrem dolů, v praxi lze pozorovat opačný směr. Tímto způsobem tak první chip obsahuje všechny nejméně významné bity (LSB - Least significant) všech kódových slov, druhý čip všechny druhé bity všech slov a tak dále. Díky tomu v případě ztráty celého čipu dojde k chybě jen v jednom bitu na kódové slovo.\\
 Dalším způsobem jak zvýšit odolnost proti rušení vysílání je použití módu redukované rychlosti (reduced rate mode). V případě použití tohoto módu jsou první dvě řady prokládací matice zahozeny a její rozměr se tak změní na $\{0,1\}^{SF-2 x (4 + CR)}$ což způsobí, že z ní nasledně vyčteme o dvě kódová slova méně. Zahozené řádky obsahují nejméně významné bity chipů, které jsou nachylnější k chybám protože odpovídají užším frekvenčním intervalům v FFT spektru. Z toho vyplývá, že mód redukované rychlosti obětuje rychlost přenosu dat ve prospěch odolnosti proti šumu. Hlavička fyzické vrstvy LoRa je v tomto módu vysílána vždy, kdežtkoo užitečná data je v případě použítí SF 11 nebo 12.
 
 \subsection{Kódování}
@@ -85,6 +85,61 @@ Pole o proměnné délce obsahující data vrstvy přístupu k médiu (MAC - Med
 \subsection{Struktura hlavičky}
 Délka hlavičky není ve specifikaci nikdy přímo určena. Lze jí však vydedukovat z toho, že hlavička je vždy vysílána v módu redukované rychlosti, má $CR =4$ a SF minimálně 7. Z toho vyplívá že hlavička se musí vejít do mřížky $\{0,1\}^{7-2 x 8)}$ a to odpovídá 5 kódovým slovům. Každé slovo má 8 bitů a dohromady je to bitů 40. Jakékoliv zbývající bity jsou použity pro užitečná data. \\
 Po dekódování díky redundantním bitům dostáváme $40\frac{4}{8} = 20$ bitů nebo 2,5 bajtu. V \ref{nejdulezitejsipapir} experimentálně vyzkoušeli pořadí hlavičky. První bajt udává délku datového obsahu, následuje půlslabika  udávající CR a přítomnost MAC CRC a poslední bajt obsahuje kontrolní součet hlavičky, z něj je však používá jen 5 LSB bitů.
+
+\section{Softwarová demodulace}
+\ref{nejdulezitejsipapir} dokázali implementovat kompletní PHY vrstvu LoRa ve frameworku GNU Radio. Jejich zdrojové kódy jsou open source a dostupné na Githubu. Funkčnost příjmu signálu LoRa mého scanneru vychází z jejich práce. V této kapitole je pospsán princip fungování.
+\subsection{Detekce a synchronizace}
+\label{subsec:detection}
+Aby mohl být signál demodulován musí být nejdříve detekován. K tomu slouží preamule která má dva opakující se cvrky čehož dokáže využít použitý Schmidl-Cox algoritmus. Ten definuje dvě veličiny $P(d)$ a $R(d)$, ty jsou definované takto (Schmidl a Cox, 1997) \ref{SchmidlCox}:
+\begin{align}P(d) = \sum_{m=0}^{L-1} (x_{t+m}^{\ast}x_{t+m+L})
+\label{eq:lora3}
+\end{align}
+\begin{align}
+R(d) = \sum_{m=0}^{L-1} \lvert{x_{t+m+L}}\rvert^{2}
+\label{eq:lora4}
+\end{align}
+kde $L$ je délka symbolu, $t$ je index vzorku komplexnímo signálu $x$ a $x^{\ast}$ je jeho komplexně sdružený signál. Veličiny $P(d)$ a $R(d)$ jsou použity k výpočtu časové metriky $M(d)$:
+\begin{align}
+M(d) = \frac{\vert P(d) \rvert ^{2}}{R(d)^{2}}
+\label{eq:lora5}
+\end{align}
+Časová metrika $M(d)$ v podstatě počítá normalizovanou autokorelaci délky $L$ přes dva symboly, maximum bude mít ve cvhíli kdy v signálu budou za sebou dva totožné symboly. Díky tomu, že oba symboly jsou chybami způsobenými prřenosem (interference, frekvenční odchylka nosné (CFO - Carrier frequency ofset), odchylka vzorkovací frekvence) ovlivněny stejně, tak tyto chyby téměř neovlivní výsledek korelace. Aby bylo možné efektivně počítat rovnice \ref{lora4} a \ref{lora5} v programu byla použita knihovna VOLK (Vector Optimized Library of Kernels), která implementuje SIMD (Single Instruction, Multiple Data) instrukce. Na obrázku \ref{fig6a} je vidět příklad výsledku použití časové metriky $M(d)$ na komplexním signálu LoRa. Kolem vzorku 2500 funkce dosahuje horní plošilny a poukazuje tak na existenci preambule. \\
+I přesto že tento algorimus detekuje preambuli velmi dobře, není možné přesně určit počátek symbolu jen z horní plošiny časové metriky. Tým kolem Wanga \ref{wang et al} proto navrhl vylepšení kdy je od časové metriky $M(d)$ odečtena její opožděná verze $M_{2}(d)$, tím se z plošiny stává vrchol \ref{fig6b} a lze tak za začátek symbolu považovat vzorky odpovídající maximu této metriky. Nicméně ani to není jak je patrné z \ref{fig6c} dostatečně přesné pro signály LoRa.\\
+Aby \ref{nejdulezitejsipapir} tenhle problém vyřešili museli vymyslet nové řešení. To se zakládá použití Schmidl-Coxovi metriky pro přibližné určení okna ve kterém se nachází druhý symbol preambule a následném zpřesnění pomocí ideálního lokálně vygenerovaného cvrku. Jeho okamžitá frekvence $\omega_{l}(t)$ a normovaná okamžitá frekvence signálu Lora  $\omega(t)$ jsou vzájemně korelovány (přes posuvné okno?) a index vzorku jež odpovídá maximální hodnotě této funkce je považován za počátek symbolu. Použití omažité frekvence místo komplexních hodnot je odůvodněno chybami CFO, které by bez korekce mohly ovlivnit přesnost synchronizace. Použitím okamžité frekvence jsou podobně jako u Schmidl-Coxova algoritmu tyto chyby zanedbatelné.
+\begin{align}
+symbol start = \argmax_{i \in \{0,1,...L\}} (\omega_{l} \star \omega)(i)
+\label{eq:lora6}
+\end{align}
+Výsledek je na \ref{fig6d}. Poslední součástí tohoto řešení je určení prahové hodnoty maxima korelačního koeficientu okamžitých frekvencí lokálnlně gerovaného cvrku a přijátého. Pokud je tato hodnota menší než prahová je daný rámec zahozen, protože se buďto jedná o falešně pozitivní detekci rámce nebo o nepovedenou synchronizaci.
+\subsection{Demodulace}
+\label{subsec:demodulace}
+Po úspěšné synchronizaci následuje fáze demodulace popsaná v předchozí kapitole. Oproti teorii má však v praxi FFT demodulace nevýhodu v tom, že je citlivá na odchylku frekvence, která způsobuje posun hodnot FFT a tím i odečítaných hodnot chipů. Tím pádem je potřeba přesná synchronizace frekvence, kterou je navíc potřeba aplikovat na každý kanál LoRa zvlášť. Separace kanálů a následná synchronizace každého z nich je však v softawaru příliš náročná operace a tak \ref{nejdulezitejsipapir} přišli s novou metodou demodulace, která je nezávislá na frekvenci a umožňuje demodulaci na všech kanálech současně v reálném čase. V porovnání s FFT metodou je však méně robustní.\\
+Nejdříve je potřeba spočítat okamžitou úhlovou fekvenci $\omega[t]=\frac{d\varphi[t]}{dt}$. Poté je potřeba $\omega[t]$ vyhladit a decimovat konstantním decimačním faktorem $\frac{s_fT}{2^{SF}}$ kde $s_f$ je vzorkovací frekvence. Díky tomu je pak počet vzorků v $\omega[t]$ schodný s $2^{SF}$ následně je vypočítán digitální gradient $f$:
+\begin{align}
+D_t[\omega[t]] = \omega[t+1]-\omega[t]
+\label{eq:lora7}
+\end{align}
+Tuto operaci si lze představit jako filtr horní propusť okamžité frekvence nebo jako druhou derivaci fáze. Protože frekvence základního cvrku se lineárně zvyšuje s $k$ - $\omega(t) = kt + f_0$ je její derivace $\omega'(t)$ rovna $k$. Pro modulované cvrky se však v $D_t$ objeví ostré šličky v místech přechodu mezi vysokou a nízkou frekvencí. Přítomnost takových špiček indikuje časový posun $\hat{t}$, nepřítomnost naopak idikuje časový posun 0 - základní cvrk.\\
+
+Dalším problémem při demodulaci je zpožďování/předbíhání hodin v jednotlivých zařízeních. Kristalové oscilátory v LoRa vysílači a SDR se budou zákonitě navzájem předbíhat nebo zpožďovat, rozdíl jejich frekvencí je předem neznámý, ale v průbhu času se musí projevit. To může způsobovat problémy zejména v případě delšího datového obsahu v kombinaci s vyšším SF. V patentu LoRa jsou pro účely korekce tohoto jevu použity pilotní symboly, které pomohou sledovat časování. Ve skutečnosti se však zdá, že k jejich použití nebylo přistoupeno. Je tedy nutné využít techniku slepého odhadu, která využívá převzorkování přijatého signálu $N$-krát. Aby tato technika byla funkční je potřeba aby hodnota $N$ odpovídala následujícímu vztahu $\lvert\Delta t \rvert < \frac{N}{2}$\\, kde $\Delta t$ je chyba časování na symbol.
+Prvním krokem je synchronizace popsaná v \ref{ subsec:detection}. Pokud je chyba časování na symbol  $\lvert\Delta t \rvert < \frac{N}{2}$\\, lze $\lvert\Delta t \rvert$ určit následujícím způsobem:
+\begin{enumerate}
+\item
+Symbol je demodulován běžným způsobem jak je popsáno v \ref{subsec:demodulace} a je tak získána hodnoto chipu $i$  a časového posunu $\hat{t}$.
+\item
+Na přijímači je lokálně generovaný základni cvrk modulován na i což způsobí časový posun $\hat{t}_1$ lokálního signálu.
+\item
+Protože lokálně generovaný cvrk není ovlivněn rozdílem oscilátorů vysílače a přijímače můžeme vzájemné zpoždění oscilátorů definvat takto $\Delta t = \hat{t}_1 - \hat{t}$. Nyní stačí na příjimači opravit $\hat{t}$ připočtením vzájemného zpoždění k přijatému signálu.
+\end{enumerate}
+Již zmíněná podmínka $\lvert\Delta t \rvert < \frac{N}{2}$ je daná tím, že při jejím nesplnění dekodér špatně určí hodnotu chipu $i$ a chyba se tak bude šířit i do dalších symbolů. Hodnota $N$ tak není určena přímo ale jako interpolace z $\hat{t}$ do $\hat{t} + \Delta t$. Vyšší hodnoty $N$ by dále vylepšovali přesnost korekcí zpoždění ale také by zvyšovali náročnost výpočtu.
+
+\subsection{Dekódování}
+Ve fázi dekódování jsou hodnoty chipů zpětně proloženy a tím jsou získána kódová slova s 4 + CR bity. Prvních 8 kódových slov lze přímo dekódovat jako hlavičku fyzické vrstvy. Datový obsah však musí být nejprve XORován bělící posloupností. I přesto že dle výrobce LoRa Semtech má jít o sekvenci generovanou 9-bitovým LFSR ve skutečnosti je dle výzkumu \ref{Knight 2016, Blum 2017} použita posloupnost mírně odlišná, která však není veřejně zdokumentovaná.\\
+Pokud však známe původní  kódové slovo i přijaté vybělené lze snadno zjistit sekvenci použitou pro XORování následovně
+$w^{(j)} = c_w^{(j)} \oplus c^{(j)}$. Pro zjednodušení lze vyslat všechna kódová slova nulová a tím dostaneme rovnici $w^{(j)} = c_w^{(j)} \oplus 0$ a na výstupu tak máme přío samotnou bělící sekvenci, kterou můžeme uložit a poté náčítat z tabulky. \\
+Po Odbělování příchází poslední krok a to Hammingovo dekódování kódových slov. U LoRa jsou datové bity umístěny na jiných pozicích než je běžné a to na indexech 0,1,2 a 3 bajtu místo indexů 1,2,3 a 5. Graficky je toto mapování zobrazeno na \ref{hamming}. Po extrakci datových bitů jsou pak pomocí paritních bitů detekovány a případně opraveny chyby a tím získána původní data.
+
+
 
 
 \chapter{Závěr}
