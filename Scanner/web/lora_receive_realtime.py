@@ -3,12 +3,13 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Lora Receive Realtime
-# Generated: Fri Dec 28 00:07:29 2018
+# Generated: Sun Dec 30 15:05:11 2018
 ##################################################
 
 
 from gnuradio import eng_notation
 from gnuradio import gr
+from gnuradio import zeromq
 from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
 from optparse import OptionParser
@@ -37,6 +38,8 @@ class lora_receive_realtime(gr.top_block):
         ##################################################
         # Blocks
         ##################################################
+        self.zeromq_push_msg_sink_1 = zeromq.push_msg_sink("tcp://127.0.0.1:5002", 100)
+        self.zeromq_pub_msg_sink_0 = zeromq.pub_msg_sink(address, 100)
         self.osmosdr_source_0 = osmosdr.source( args="numchan=" + str(1) + " " + 'rtl_tcp=127.0.0.1:7373' )
         self.osmosdr_source_0.set_sample_rate(samp_rate)
         self.osmosdr_source_0.set_center_freq(capture_freq, 0)
@@ -50,13 +53,15 @@ class lora_receive_realtime(gr.top_block):
         self.osmosdr_source_0.set_antenna('', 0)
         self.osmosdr_source_0.set_bandwidth(0, 0)
 
-        self.lora_message_socket_sink_0 = lora.message_socket_sink('127.0.0.1', 5005, 0)
+        self.lora_message_socket_sink_0 = lora.message_socket_sink('127.0.0.1', 5005, 2)
         self.lora_lora_receiver_0 = lora.lora_receiver(1e6, capture_freq, ([target_freq]), bw, sf, False, 4, True, False, downlink, decimation, False, False)
 
         ##################################################
         # Connections
         ##################################################
         self.msg_connect((self.lora_lora_receiver_0, 'frames'), (self.lora_message_socket_sink_0, 'in'))
+        self.msg_connect((self.lora_lora_receiver_0, 'frames'), (self.zeromq_pub_msg_sink_0, 'in'))
+        self.msg_connect((self.lora_lora_receiver_0, 'frames'), (self.zeromq_push_msg_sink_1, 'in'))
         self.connect((self.osmosdr_source_0, 0), (self.lora_lora_receiver_0, 0))
 
     def get_target_freq(self):

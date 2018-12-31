@@ -23,12 +23,15 @@ from flask import Flask, request
 from flask_socketio import SocketIO, emit
 from threading import Thread
 import socket
-import time, zmq, pmt
+import time
+import zmq
+import pmt
 from lora_receive_realtime import lora_receive_realtime
 from sigfox_receive_realtime import sigfox_receive_realtime
 
 HTTP_PORT = 5000
 ZMQ_PORT = 5001
+ZMQ_PORT2 = 5002
 SETTINGS = {'lora': 'False', 'sigfox': 'False', 'channel': [], 'sf': []}
 LORA_SESSIONS = {}
 
@@ -38,6 +41,7 @@ socketio = SocketIO(app)
 
 
 def background_thread():
+    time.sleep(15)
     UDP_IP = "127.0.0.1"
     UDP_PORT = 5005
 
@@ -47,7 +51,7 @@ def background_thread():
 
     while True:
         data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
-        print "received message:", data
+        print "UDP received"
         message = 'hello'
         socketio.emit('gnu radio', (message,))
         time.sleep(0.10)
@@ -58,13 +62,34 @@ def background_thread_2():
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
     socket.setsockopt(zmq.SUBSCRIBE, "")
-    socket.connect("tcp://0.0.0.0:%d" % (ZMQ_PORT))
+    socket.bind("tcp://0.0.0.0:%d" % (ZMQ_PORT))
+    count = 0
+    while True:
+        # Receive decoded ADS-B message from the decoder over ZMQ
+
+        pdu_bin = socket.recv()
+        pdu = str(pmt.deserialize_str(pdu_bin)).decode('utf-8', 'ignore').encode("utf-8")
+        print 'zmq subbed'
+        message = 'hello2'
+        socketio.emit('gnu radio', (message,))
+        time.sleep(0.5)
+        count = count + 1
+        print count
+
+
+def background_thread_3():
+    # Establish ZMQ context and socket needs push in GNUradio
+    time.sleep(15)
+    context2 = zmq.Context()
+    receiver = context2.socket(zmq.PULL)
+    receiver.bind("tcp://127.0.0.1:%d" % ZMQ_PORT2)
 
     while True:
         # Receive decoded ADS-B message from the decoder over ZMQ
-        pdu_bin = socket.recv()
+        pdu_bin = receiver.recv()
         pdu = str(pmt.deserialize_str(pdu_bin)).decode('utf-8', 'ignore').encode("utf-8")
-        message = 'hello2'
+        print 'zmq pulled'
+        message = 'hello3'
         socketio.emit('gnu radio', (message,))
         time.sleep(0.10)
 
@@ -196,12 +221,15 @@ def handle_switch(settings, methods=['GET', 'POST']):
 
 
 if __name__ == "__main__":
-    thread = Thread(target=background_thread)
-    thread.daemon = True
-    thread.start()
-    thread = Thread(target=background_thread_2)
-    thread.daemon = True
-    thread.start()
+    thread1 = Thread(target=background_thread)
+    thread1.daemon = True
+    thread1.start()
+    thread2 = Thread(target=background_thread_2)
+    thread2.daemon = True
+    thread2.start()
+    thread3 = Thread(target=background_thread_3)
+    thread3.daemon = True
+    thread3.start()
     # subprocess.Popen(['rtl_tcp', '-f', '868000000', '-g',  '10', '-s', '1000000'])
     # subprocess.Popen('exec ncat localhost 1234 | ncat -4l 7373 -k --send-only --allow 127.0.0.1', shell=True)
     print 'debug -------------------'
