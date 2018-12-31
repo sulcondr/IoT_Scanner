@@ -26,6 +26,8 @@ import socket
 import time
 import zmq
 import pmt
+import binascii
+import struct
 from lora_receive_realtime import lora_receive_realtime
 from sigfox_receive_realtime import sigfox_receive_realtime
 
@@ -41,7 +43,7 @@ socketio = SocketIO(app)
 
 
 def background_thread():
-    time.sleep(15)
+    # time.sleep(15)
     UDP_IP = "127.0.0.1"
     UDP_PORT = 5005
 
@@ -50,10 +52,11 @@ def background_thread():
     sock.bind((UDP_IP, UDP_PORT))
 
     while True:
-        data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
-        print "UDP received"
-        message = 'hello'
-        socketio.emit('gnu radio', (message,))
+        recv, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
+        data = bytearray(recv)
+        parsed = parse_frame(data)
+        emit_frame(parsed)
+        #socketio.emit('gnu radio', (message,))
         time.sleep(0.10)
 
 
@@ -79,7 +82,7 @@ def background_thread_2():
 
 def background_thread_3():
     # Establish ZMQ context and socket needs push in GNUradio
-    time.sleep(15)
+    # time.sleep(15)
     context2 = zmq.Context()
     receiver = context2.socket(zmq.PULL)
     receiver.bind("tcp://127.0.0.1:%d" % ZMQ_PORT2)
@@ -92,6 +95,38 @@ def background_thread_3():
         message = 'hello3'
         socketio.emit('gnu radio', (message,))
         time.sleep(0.10)
+
+
+def emit_frame(parsed):
+    frame = {
+        'freq': parsed[3],
+        'bw': parsed[4],
+        'sf': parsed[5],
+        'snr': parsed[9] / 100.0,
+        'length': parsed[11]
+    }
+    print frame
+    socketio.emit('gnu_radio', frame)
+
+
+def parse_frame(data):
+    test = binascii.hexlify(data)
+    tap_header_format = 'bbhiibbbbib'
+    phy_header_format = 'bbbb'
+    header_format = tap_header_format + phy_header_format
+    header_len = struct.calcsize(header_format)
+    data_len = len(data)
+    data_format = header_format + str(data_len - header_len) + 's'
+    # print "tap header: ", header_len
+    # print "data length: ", data_len
+    # print "test length: ", len(test)
+
+    unpacked = struct.unpack(data_format, data)
+    # print unpacked
+    # print '-----------------------------------------------------'
+    # print "bin " + data
+    # print 'hex ' + test
+    return unpacked
 
 
 def update_local_settings(settings):
@@ -224,12 +259,12 @@ if __name__ == "__main__":
     thread1 = Thread(target=background_thread)
     thread1.daemon = True
     thread1.start()
-    thread2 = Thread(target=background_thread_2)
-    thread2.daemon = True
-    thread2.start()
-    thread3 = Thread(target=background_thread_3)
-    thread3.daemon = True
-    thread3.start()
+    # thread2 = Thread(target=background_thread_2)
+    # thread2.daemon = True
+    # thread2.start()
+    # thread3 = Thread(target=background_thread_3)
+    # thread3.daemon = True
+    # thread3.start()
     # subprocess.Popen(['rtl_tcp', '-f', '868000000', '-g',  '10', '-s', '1000000'])
     # subprocess.Popen('exec ncat localhost 1234 | ncat -4l 7373 -k --send-only --allow 127.0.0.1', shell=True)
     print 'debug -------------------'
