@@ -114,19 +114,25 @@ def parse_frame(data):
     tap_header_format = 'bbhiibbbbib'
     phy_header_format = 'bbbb'
     header_format = tap_header_format + phy_header_format
+    print header_format
     header_len = struct.calcsize(header_format)
     data_len = len(data)
-    data_format = header_format + str(data_len - header_len) + 's'
-    # print "tap header: ", header_len
-    # print "data length: ", data_len
-    # print "test length: ", len(test)
+    if header_len > data_len:
+        print 'bad packet received'
+        return (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,)
+    else:
+        data_format = header_format + str(data_len - header_len) + 's'
+        print data_format
+        # print "tap header: ", header_len
+        # print "data length: ", data_len
+        # print "test length: ", len(test)
 
-    unpacked = struct.unpack(data_format, data)
-    # print unpacked
-    # print '-----------------------------------------------------'
-    # print "bin " + data
-    # print 'hex ' + test
-    return unpacked
+        unpacked = struct.unpack(data_format, data)
+        # print unpacked
+        # print '-----------------------------------------------------'
+        # print "bin " + data
+        # print 'hex ' + test
+        return unpacked
 
 
 def update_local_settings(settings):
