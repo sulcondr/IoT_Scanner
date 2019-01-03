@@ -32,8 +32,9 @@ from lora_receive_realtime import lora_receive_realtime
 from sigfox_receive_realtime import sigfox_receive_realtime
 
 HTTP_PORT = 5000
-ZMQ_PORT = 5001
-ZMQ_PORT2 = 5002
+UDP_IP = "127.0.0.1"
+UDP_PORT = 5005
+RTL_ADDRESS = '192.168.0.23'
 SETTINGS = {'lora': 'False', 'sigfox': 'False', 'channel': [], 'sf': []}
 LORA_SESSIONS = {}
 
@@ -44,9 +45,6 @@ socketio = SocketIO(app)
 
 def background_thread():
     # time.sleep(15)
-    UDP_IP = "127.0.0.1"
-    UDP_PORT = 5005
-
     sock = socket.socket(socket.AF_INET,  # Internet
                          socket.SOCK_DGRAM)  # UDP
     sock.bind((UDP_IP, UDP_PORT))
@@ -55,64 +53,28 @@ def background_thread():
         recv, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
         data = bytearray(recv)
         parsed = parse_frame(data)
-        emit_frame(parsed)
-        #socketio.emit('gnu radio', (message,))
+        message = make_message(parsed)
+        socketio.emit('gnu radio', message)
         time.sleep(0.10)
 
 
-def background_thread_2():
-    # Establish ZMQ context and socket
-    context = zmq.Context()
-    socket = context.socket(zmq.SUB)
-    socket.setsockopt(zmq.SUBSCRIBE, "")
-    socket.bind("tcp://0.0.0.0:%d" % (ZMQ_PORT))
-    count = 0
-    while True:
-        # Receive decoded ADS-B message from the decoder over ZMQ
-
-        pdu_bin = socket.recv()
-        pdu = str(pmt.deserialize_str(pdu_bin)).decode('utf-8', 'ignore').encode("utf-8")
-        print 'zmq subbed'
-        message = 'hello2'
-        socketio.emit('gnu radio', (message,))
-        time.sleep(0.5)
-        count = count + 1
-        print count
-
-
-def background_thread_3():
-    # Establish ZMQ context and socket needs push in GNUradio
-    # time.sleep(15)
-    context2 = zmq.Context()
-    receiver = context2.socket(zmq.PULL)
-    receiver.bind("tcp://127.0.0.1:%d" % ZMQ_PORT2)
-
-    while True:
-        # Receive decoded ADS-B message from the decoder over ZMQ
-        pdu_bin = receiver.recv()
-        pdu = str(pmt.deserialize_str(pdu_bin)).decode('utf-8', 'ignore').encode("utf-8")
-        print 'zmq pulled'
-        message = 'hello3'
-        socketio.emit('gnu radio', (message,))
-        time.sleep(0.10)
-
-
-def emit_frame(parsed):
+def make_message(parsed):
     frame = {
         'freq': parsed[3],
         'bw': parsed[4],
         'sf': parsed[5],
         'snr': parsed[9] / 100.0,
-        'length': parsed[11]
+        'length': parsed[11],
+        'payload': parsed[14]
     }
     print frame
-    socketio.emit('gnu_radio', frame)
-
+    #socketio.emit('gnu_radio', frame)
+    return frame
 
 def parse_frame(data):
     test = binascii.hexlify(data)
     tap_header_format = 'bbhiibbbbib'
-    phy_header_format = 'bbbb'
+    phy_header_format = 'bbb'
     header_format = tap_header_format + phy_header_format
     print header_format
     header_len = struct.calcsize(header_format)
@@ -128,7 +90,7 @@ def parse_frame(data):
         # print "test length: ", len(test)
 
         unpacked = struct.unpack(data_format, data)
-        # print unpacked
+        print unpacked
         # print '-----------------------------------------------------'
         # print "bin " + data
         # print 'hex ' + test
@@ -145,7 +107,7 @@ def create_lora_session(channel, sf):
         LORA_SESSIONS[channel] = {}
     if sf not in LORA_SESSIONS[channel]:
         try:
-            LORA_SESSIONS[channel][sf] = lora_receive_realtime(channel, sf)
+            LORA_SESSIONS[channel][sf] = lora_receive_realtime(channel, sf, UDP_PORT)
             print LORA_SESSIONS
         except RuntimeError as error:
             print('Failed to start LoRa receiver: {}'.format(error))
@@ -265,14 +227,9 @@ if __name__ == "__main__":
     thread1 = Thread(target=background_thread)
     thread1.daemon = True
     thread1.start()
-    # thread2 = Thread(target=background_thread_2)
-    # thread2.daemon = True
-    # thread2.start()
-    # thread3 = Thread(target=background_thread_3)
-    # thread3.daemon = True
-    # thread3.start()
+
     # subprocess.Popen(['rtl_tcp', '-f', '868000000', '-g',  '10', '-s', '1000000'])
     # subprocess.Popen('exec ncat localhost 1234 | ncat -4l 7373 -k --send-only --allow 127.0.0.1', shell=True)
     print 'debug -------------------'
 
-    socketio.run(app, host="0.0.0.0", port=HTTP_PORT, debug=True)
+    socketio.run(app, host="0.0.0.0", port=HTTP_PORT, debug=False)

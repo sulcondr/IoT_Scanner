@@ -2,14 +2,31 @@
 <html lang="en">
 <head>
     <title>IoT Scanner</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+    </style>
 </head>
 <body>
 
-<h4 style='color: #ccc;font-size: 30px;'>No pdu yet..</h4>
-<div class="pdu_holder"></div>
+
+<div class="pdu_holder">
+    <table style="width:75%" id="receive_table">
+        <tr>
+            <th>Technology</th>
+            <th>SNR (dB)</th>
+            <th>Frequency (Hz)</th>
+            <th>Bandwidth (Hz)</th>
+            <th>Spreading factor</th>
+            <th>Length (B)</th>
+            <th>Payload</th>
+        </tr>
+    </table>
+</div>
 <h5 style='color: #ccc;font-size: 30px;'>Settings not updated yet..</h5>
 <div class="log"></div>
-
 
 
 <form id=switch action="" method="POST">
@@ -89,8 +106,8 @@
 
     socket.on('gnu radio', function (pdu) {
         console.log(pdu);
-        $('h4').remove();
-        $('div.pdu_holder').append('<div><b style="color: #000">' + pdu + '</b></div>')
+        $('#receive_table').append('<tr><td>LoRa</td><td>' + pdu.snr + '</td><td>' + pdu.freq + '</td>' +
+            '<td>'+pdu.bw+'</td><td>'+pdu.sf+'</td><td>'+pdu.length+'</td><td>'+pdu.payload+'</td></tr>')
     })
     socket.on('log', function (message) {
         console.log(message);
@@ -99,18 +116,20 @@
     })
     socket.on('settings_update', function (settings) {
         console.log(settings)
-        $("#channels").val( settings.channel);
+        $("#channels").val(settings.channel);
         $("#sf").val(settings.sf);
         console.log(settings.lora)
 
-        if (settings.lora === 'True'){
-        $("input[name=lora][value='True']").prop("checked",true);}
-        else{
-            $("input[name=lora][value='False']").prop("checked",true);}
-        if (settings.sigfox === 'True'){
-            $("input[name=sigfox][value='True']").prop("checked",true);}
-        else{
-            $("input[name=sigfox][value='False']").prop("checked",true);}
+        if (settings.lora === 'True') {
+            $("input[name=lora][value='True']").prop("checked", true);
+        } else {
+            $("input[name=lora][value='False']").prop("checked", true);
+        }
+        if (settings.sigfox === 'True') {
+            $("input[name=sigfox][value='True']").prop("checked", true);
+        } else {
+            $("input[name=sigfox][value='False']").prop("checked", true);
+        }
 
     })
 </script>
