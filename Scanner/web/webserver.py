@@ -29,6 +29,7 @@ from sigfox_receive_realtime import sigfox_receive_realtime
 
 HTTP_PORT = 5000
 ZMQ_PORT = 5001
+ZMQ_PORT2 = 5002
 SETTINGS = {'lora': 'False', 'sigfox': 'False', 'channel': [], 'sf': []}
 LORA_SESSIONS = {}
 
@@ -65,6 +66,20 @@ def background_thread_2():
         pdu_bin = socket.recv()
         pdu = str(pmt.deserialize_str(pdu_bin)).decode('utf-8', 'ignore').encode("utf-8")
         message = 'hello2'
+        socketio.emit('gnu radio', (message,))
+        time.sleep(0.10)
+
+def background_thread_3():
+    # Establish ZMQ context and socket needs push in GNUradio
+    context = zmq.Context()
+    receiver = context.socket(zmq.PULL)
+    receiver.bind("tcp://0.0.0.0:%d" % ZMQ_PORT2)
+
+    while True:
+        # Receive decoded ADS-B message from the decoder over ZMQ
+        pdu_bin = socket.recv()
+        pdu = str(pmt.deserialize_str(pdu_bin)).decode('utf-8', 'ignore').encode("utf-8")
+        message = 'hello3'
         socketio.emit('gnu radio', (message,))
         time.sleep(0.10)
 

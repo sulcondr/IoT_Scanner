@@ -52,8 +52,8 @@ Nejlepsi prace na svete
 
 
 
-\chapter{Softwérově definované rádio}
-\section{Úvod do SDR}
+\chapter{Softwérově definované rádio} \label{chapter:sdr}
+\section{Úvod do SDR} 
 Značná část historie použití rádiových vln využívala rádia, která byla implementována čístě v hardware. Pro každou úpravu  vlastností rádia, tak bylo zapotřebí ho fyzicky upravit. S rozmachem výpočetní techniky však přišel vývoj i v oblasti rádia a na světlo světa se tak nejdříve dostala SCR (Software controled radio), která umožňovala v omezené míře ovlivňovat některé funkce a pozdějí i rádia SDR, která mohou být použita univerzálně díky digitálnímu zpracování signálu (DSP -Digital signal processing). \\
 První známe nasazení SDR v praxi bylo v armádě, jednalo se o systém SPEAKeasy. Systém vyvinula DARPA v roce 1991 a umožňoval díky softwarové implementaci komunikovat prostřednictvím 10 různých vojenských protokolů na frekvencích od 2 MHz po 2 Ghz. SPEAKeasy byl připraven i na přidání dalších modulací a protokolů. O rok později již vyšel první článek o SDR na IEEE, napsal ho Joe Mitola a je tak považován za kmotra SDR. \cite{sdrHistory2010}\\
 I přes tyto slibné začátky a podchycení jeho teoretických možností se SDR rozšiřovalo poměrně pomalu a jeho význam narostl až v podlední době s rozmachem levných výkoných integrovaných čipů. Velkou motivací využití SDR do budoucna jsou tzv. kognitivní rádia, která se dokáži přizpůsobit aktualnímu stavu spektra.
@@ -84,7 +84,7 @@ Konvertor domény jak již název napovída převádí anologový signál na dig
  Poslední prvek tedy backend kde probíhá digitální zpracování je založen na FPGA a/nebo DSP programovatelných počítačích, na kterých běží software.\\
 Převod mezi analogovou a digitální  doménou se může odehrát v různých místech zpracování viz obrázek  \ref{SDRconversion} a podle toho lze systémy kategorizovat.
 \begin{figure}
-\caption{Klasifikace SDR dle místa konverze domény\ref{andrásretzler2014}}
+\caption{Klasifikace SDR dle místa konverze domény\cite{andrásretzler2014}}
 \includegraphics[width=1\textwidth]{./images/SDRconversion.png}
 \label{SDRconversion}
 \end{figure}
@@ -115,7 +115,7 @@ Celé to začalo v roce 2008, kdy Realtek představil chipset RTL2832U s  DVB-T 
 V roce 2010 totiž Eric Fry při pokusech o napsání ovladačů tohoto DVB-T donglu odposlouchával USB pakety během používání FM aplikace pro Windows. Eric zjistil, že narozdíl od přijmu DVB-T, kdy demodulace probíhá přímo na čipu, při příjmu FM, DAB a DAB+ demodulace probíhá až v SW počítače a přes USB se tedy přenáší I/Q vzorky, jeho primárním cílem však byli ovladače pro Linux a tak nezačal s vývojem pro použití jako SDR.\\
 Informace se sice rozšířila, ale až do roku 2012 nenastal žádný větší pokrok. V tomto roce se o tento DVB-T přijímač od Realteku začal zajímat Antti Palosaari. Ten potvrdil možnost využití jako SDR díky přístupu k 8-bitovým I/Q vzorkům a začal s vývojem potřebného SW. Díky navázání spolupráce s organizací Osmocom, která se v té době vyvýjela vlastní SDR založené na tuneru E4000, což byl jeden z tunerů používaných v DVB-T přijímačích Realtek, práce nabrala obrátek a brzy byl vyvinut driver SW pro jednoduché použití těchto USB donglů jako SDR. Nejdůležitějším krokem bylo nejspíše vyvinutí ovladače pro linux, o to se v organizaci Osmocom postaral Steve Markgraf.
 \cite{rtlhistory2016}
-\ref{rtlhistory2018}
+\cite{rtlhistory2018}
 \\
 Tento počin nastartoval éru RTL-SDR a na jeho základě tak vzniklo obrovské množství projektů všeho druhu, jmenovat budu jen pár těch zajímavějších (pokud čtete tu práci ve formátu PDF můžete kliknutím na projekt přejít na stránky, které se mu věnují):\\ \href{https://www.rtl-sdr.com/rtl-sdr-used-as-a-spectrum-analyzer/}{Spektrální analyzér}, \href{https://www.rtl-sdr.com/rtl-sdr-tutorial-analyzing-gsm-with-airprobe-and-wireshark/}{Odposlech GSM}, \href{https://www.rtl-sdr.com/adsb-aircraft-radar-with-rtl-sdr/}{Sledování letadel pomocí ADSB}, \href{https://www.rtl-sdr.com/using-rtl-sdr-cheap-entropy-source/}{Generátor nahodných čísel}, \href{https://www.rtl-sdr.com/receiving-weather-balloon-data-with-rtl-sdr/}{Příjem dat meterologických balónů}, \href{https://www.rtl-sdr.com/meteor-reflection-observations-with-rtl-sdr/}{Sledování meteoritů}, nebo \href{https://technet.idnes.cz/odposlech-site-tetra-a-mestske-policie-dhy-/tec_technika.aspx?c=A160913_145939_tec_technika_vse}{Odposlech vysílaček městské policie}\\
 
@@ -367,7 +367,92 @@ Preamble (91) & Frame Sync (13) & ECC (32) & Payload (0 - 64) & MAC (16) & FCS (
 
 \part{Přehledový přjímač}
 \chapter{Hardware}
+V této kapitole shrnu veškerý potřebný hardware pro přehledový přijímač. Jedninou povinnou součástí určenou v zadání bylo SDR, ostatní komponenty však vyplynuly z potřebných vlastností přijímače, a tak nezbylo příliš prostoru pro invenci. Cíl bylo zhotovit přijímač tak aby byl mobilní, mohl funguvat na baterie a vyhověl zadání v tom smyslu, že kromě příjmu dat ze sítí IoT bude schopen je také předat po IP protokolech dál a sám přehledně zobrazit.
+\section{RTL-SDR}
+
+I přesto, že konkrétní druh SDR nebyl v zadání určen, byla jeho volba jen formální záležitostí. Jak už totiž vyplývá z kapitoly ref{chapter:sdr} RTL-SDR je de facto stardard pro amatérské využití. Mezi ostatnímy SDR se vyjímá předeším cenou, která je desetinnásobně až stonásobně menší. Jeho hlavní nevýhodou oproti dražším variantám je nemožnost vysílání, tato nevýhoda však vzhledem k určení není relevantní. Dalším potencionální nevýhodou by mohl být rozsah. Vzhledem k tomu, že jsem se však rozhodl soustředit pouze dva druhy Iot sítí - LoRa a Sigfox a obě pracují v bezlicenčním pásmu ISM 868Mhz, je i tato nevýhoda bezvýznamná. Ostatní nedostatky oproti dražší konkurenci jsou již tak malé, že by pro účely této práce nedávalo smysl volit jinak.\\
+V případě dalšího vývoje v budoucnosti je však možné, že bude potřeba SDR upgradovat. To může být motivováno technologií NB-Iot, kterou u nás provozuje operátor Vodafone. Tato technologie funguje na stejných pásmech jako LTE a tak se vzhledem k nemožnosti příjmu fekvencí nad 1766 Mhz může NB-IoT dostat mimo rozsah RTL-SDR. Upgrade by pak mohl proběhnout dvěma způsoby, buďto přidáním konvertoru, nebo výměnou samotného SDR. To už jsou však úvahy náležící pozdějším pracem. V obou případech se však díky využití GNU Radio bude jednat o jednoduchou výměnu, bez nutnosti větších zásahů do software přehledového přijímače.\\
+Specifikovat vybrané SDR pouze jako RTL-SDR však nestačí. Toto označení se používá pro nepřeberné množství USB DVB-T tunerů používajících čipset RTL2832U. Ty se mezi sebou mohou lišit ve několika ohledech. Prvním je použitý tuner. Nejžádanější variantou pro účely SDR je tuner E4000 od firmy Elonics, má totiž nejširší rozsah z používaných tunerů. \\cite{osmocom} Jeho nevýhodou však je dostupnost, tento tuner se již nevyrábí a tak jsou RTL-SDR s tím to tunerem ke koupi již jen ze zapomenutých zásob obchodů a nebo z druhé ruky. Jejich cena tak oproti ostatním variantám v poslední době stoupla i přesto, že ještě před několika lety se nijak nelišila. V poslední době je tak nejběžnějším tunerem R820T2, ten má sice rozsah o něco menší než E4000 (ale větší než ostatní tunery), nemá v něm však mezery a je tak i vzhledem k dostupnosti nejvhodnější variantou.\\
+Druhým zásadním parametrem, kterým se můžou RTL-SDR lišit je konektor antény. Vzhledem k tomu, že byly původně určeny pro sledování televize, mají často konektor PAL nebo MCX. \cite{rtlsdrcom} To v zásadě nepředstavuje problém, ale pro práci s rádiem se častěji používá konektor SMA a proto existuje také větší množství a výběr antén k tomuto konektoru.\\
+Posledním zásadním parametrem odlišujícím různá RTL-SDR je přitomnost teplotně kompenzovaného oscilátoru (TXCO). Ten je užitečný, protože při použití se RTL-SDR zahřívá a pokud není jeho oscilátor tepelně kompenzovám, tak se jeho frekvence mění. Zahřívání na plnou provozní teplotu trvá několik minut, během této doby zůstane nalazená frekvence u SDR-RTL s TXCO stabilní, kdežto u ustatních se bude posouvat.\\
+\\ Po zvážení těchto skutečností a také kvůli dalším úpravám mířeným na zlepšení použití jako SDR jsem zvolil RTL-SDR Blog V3. Tato varianta RTL-SDR byla speciálně upravena pro použití ne jako DVB-T tuner ale jako SDR. Kromě tuneru R820T2, konektoru antény SMA a TXCO má i další vylepšení. Nejdůležitějším vylepšením pro použití v přehledovém přijímači je použití hliníkového krytu, který funguje jako chladič pro interní komponenty a zároveň jako elektromagnetický štít. To spolu s lepším návrhem PCB také snižuje množství šumu. Další vylepšení nejsou pro účely této práce až tolik podstatná spíše přispívají k znovupoužitelnosti tohoto SDR v dalších projektech. Konkrétně se jedná o softwarově spínatelné bias tee (napájení např. nízkošumového zesilovače z RTL-SDR), režim přímého vzorkování (zpřístupňuje fekvence 500 kHz - 24 MHz přímo přes SMA konektor) a mnoho dalších maličkostí, jejich kompletní výčet je v obrázku \ref{rtl_better}
+\begin{figure}
+\caption{Výhody RTL-SDR blog V3 oproti běžným RTL DVB-T \cite{rtlsdrcom}}
+\includegraphics[width=1\textwidth]{./images/rtlsdr_v3_better.jpg}
+\label{rtl_better}
+\end{figure}
+\section{Raspberry Pi}
+\subsection{Displej}
+
+\section{Napájení}
+Vzhledem k potřebě fungování přehledového přijímače na baterky bylo nutné řešit napájení složitěji, než jen zapojením Raspberry Pi do USB nabíječky. Bylo potřeba zvolit správnou baterii, DC-DC měnič s výstupem 5V pro napájení Raspberry PI (A přes něj ostatních komponent), způsob nabíjení baterií, vypínač a propojení těchto komponent.\\
+ Jako zdroj energie jsem zvolil články typu 18650 Li-Ion. Je to stejný typ článků jako se používá v přenosných počítačích, elektromobilech, vaporizérech a power bankách. Využívá technologii Li-Ion a díky tomu netrpí paměťovým efektem jako starší Ni-Cd a má vysokou hustotu energie. K dispozici jsem měl články značky Samsung model ICR18650-26. Kapacita jednoho článku je 2,55 Ah a nominální napětí 3,7 V. Články jsem použil tři, vložil do zakoupeného držáku a zapojil paralelně. Dostal jsem tak baterii 1s3p s kapacitou 7,65 Ah a nomilnálním napětím 3,7 V (min 3V, max 4,2V) z čehož vyplývá kapacita ve watthodinách okolo 28 Wh.\\
+ Vzhledem k tomu, že Raspberry Pi vyžaduje napětí 5 V bylo potřeba napětí z baterie zvýšit na tuto hodnotu. Zároveň jsem potřeboval vyřešit jakým způsobem budu baterii nabíjet. Stejná napětí a problémy však řeší každá power banka a tak jsem se uchýlil k již připravenému řešení v podobě booster modulu určeného do powerbanky. Tyto moduly dokáží zvýšit napětí z baterie na 5V, ohlídat napětí na bateriích aby nekleslo pod 3V (při menších napětích dochází k poškození článků) a zároveň přri zapojení zdroje dokáží baterii nabíjet a ohlídat, že její napětí nepřesáhne hodnotu 4,2 V, nad kterou dochází k poškození článků a i případnému vzplanutí.\\
+ Vyzkoušel jem několik druhů (z Aliexpress se dají podobné moduly koupit za malé častky) a nakonec se rozhodl pro HCX-PCB-429. Tento modul nejen deklaruje maximální výstupní proud 2A, ale doopravdy ho i dosahuje, což se většině ostatních nepodařilo. Další jeho výhodou je, že při připojování a odpojování nabíječky nepřeruší dodávku elektřiny na 5 V výstupu, to u těchto modelů bohužel nebývá běžné. Jeho posledí výhodou oproti dalším vyhovujícím je jeho velikost, ostatní kvalitnější moduly byly navrhnuty pro powerbanky s dvěma výstupy a měli tím pádem větší rozměry. \\
+ Raspberry Pi samotné nemá žádný vypínač, musel jsem tedy přidat vlastní. Použil jsem jednoduchý kolébkový vypínač a umístil ho v obvodu až za booster modul, díky tomu lze baterii napájet i ve vypnutém stavu a spotřeba samotného modulu je minimální, je na neustálé připojení k baterii stavěn.\\
+ Odstavec o výdrži.\\
+ 
+\section{Kryt}
+Abych z již představených jednotlivých komponent dokázal vyrobit přehledový přijímač, bylo potřeba je dohromady umístit do ochraného krytu. Přestože bývá pro účely závěrečných prací běžné sestrojit kryt z plexiskla s vyřezanými otvory, rozhodl jsem se jít jinou cestou - navrhnout a posléze na 3D tiskárně vytisknout kryt přizpůsobený na míru komponentům. \\
+Vzhledem k tomu, že jsem neměl mnoho předchozích zkušeností s návrhem 3D modelů, dal jsem na doporučení kolegy Jaroslava Bartoše, který se 3D tiskem zabývá a pro návrh zvolil CAD software Autodesk Fusion 360. V rámci studia mají studenti všech vzdělávacích institucí k dispozici licenci zdarma
+\subsection{Autodesk Fusion 360}
+Fusion 360 of Firmy autodesk je varianta jejich CAD programu zaměřená zejména na kolaboraci a na návrh modelů určenách pro výrobu, ať už pomocí 3D tiskáren nebo obrábění, soustružení, řezaní vodním paprskem, laserem či plazmou \cite{autodesk2018}. Umožňuje také simulaci 3D modelů, kde jsou k dispozici nástroje jako pro statické zatížení, tepelnou analýzu, optimalizaci tvaru a podobně. Aplikace vznikla již v roce 2013 a od té doby jsou neustále přidávány nové funkce. \\
+Princip celé aplikace je založen na cloudu, který je používán jako pro ukládání dat, tak pro náročnější výpočty. Samotná klientská aplikace je napsána v WebGL/HTML5 a je vidět snaha o maximální jednoduchost uživatelského prostředí. Kdo již někdy pracoval s jejím velkým příbuzným Autodesk Fusion Inventor, ten jistě najde hodně známých prvků. Podobně jako invertor také podporuje parametrické  i přímé modelování \cite{cadstudio}. \\
+Velkou výhodou, kterou jsem často využil při modelování komponent přijímače je také schopnost otevřít téměř libovolný formát 3D modelu, já jsem tak mohl importovat již hotové modely Raspberry Pi, Li-Ion článků nebo různých konektorů. Poslední velmi užitečnou funkcí je již v úvodu zmíněná podpora kolaborace, díky ní jsem mohl svůj návrh průběžně konzultovat s již zmíněným kolegou a provádět jeho úpravy tak aby šel výsledný model bez problému vytisknout.
+\begin{figure}
+\caption{Prostředí Autodesk Fusion 360 a navrhnutý model krytu}
+\includegraphics[width=1\textwidth]{./images/3dmodel.png}
+\label{3dmodel}
+\end{figure}
+\subsection{Model}
+Tvorbu modelu jsem započal vymodelováním všech komponent. Modeloval jsem je do různé úrovně detailu podle toho jak moc na jejich členění mohl záviset výsledný kryt. Například držak s Li-Ion články stačilo vymodelovat jako přibližný kvádr, do krytu jsem ho toiž jen vlepil na rovnou plochu. Oproti tomu Raspberry Pi které mělo mít některé konektory dostupné zvenku, bylo potřeba mít vymodelované do detailu, naštěstí jsem však našel velkmi podrobný model na internetu a vyhnul se tak zdlouhavé práci.\\
+Po vytvoření modelů komponent následovalo jejich poskládání tak aby všechny potřebné porty byly dostupné zvenku, výsledný kryt se vešel na tisknutelnou plochu tiskárny a také aby dva největší producenti tepla - RTL-SDR a Raspberry Pi nebyly hned vedle sebe. Jako poměrně náročné se ukázalo, zpřístupnění LAN a volných USB portů zároveň s uschováním veškerých propojení komponent uvnitř krytu. Ztohoto důvodu nemá kryt tvar kvádru, ale je na jedné straně vykousnutý. \\
+Výsledný kryt se skládá ze dvou částí. Ve vrchní části je zabudován displej a větráček a v dolní zbytek komponent. Ke spodní části bylo nutné ještě přilepit záslepku otvoru, který vznikl vykrojením původního kvádru. Záslepka byla vytištěna zvlášť, protože by ji bez opor nebylo možné vytisknout jako součást spodního ani horního dílu. Díly jsou spojeny šesti šrouby, celý kryt má tak velkou pevnost a působí robustně.
+
+
+\subsection{Tisk}
+O tisk se postaral můj kolega Jaroslav Bartoš. Použita byla tiskárna Průša MK2 a materíál petg. Tisk byl nastaven na nižší rychlost kvůli menší chybovosti a tisk vrchního dílu tak trval 6 hodin včetně záslepky a spodního 10 hodin. Vytisknutý kryt byl hned na první pokus použitelný bez větších úprav, jediný komponent co nešel zasadit bez úprav krytu byl displej jehož připravený výřez byl asi o pům milimetru menší, než displej samotný a bylo tak potřeba otvor trochu zvětšit.
+
+
+\section{Zapojení}
+Při zapojení se centrálním prvkem stalo Raspberry Pi a k němu jsou připojeny všechny ostatní komponenty. Konkrétní porty a dostupnost komponent a volných portů zvenku lze vyčíst z digramu na obrázku \ref{zapojení}.
+\begin{figure}
+\caption{Diagram zapojení a dostupnosti portů přehledového přijímače}
+\includegraphics[width=1\textwidth]{./images/diagramZapojeni.png}
+\label{zapojení}
+\end{figure}
+
+
 \chapter{Software}
+V této kapitole se budu věnovat veškerému software potřebnému k fungování přehledového přijímače ať už se bude jednat o SW vytvořený třetímy stranami nebo mnou. Softwarovou výbavu přehledového přijémače lze rozdělit do několika bloků. První blok se věnuje přímo modulu RTL-SDR, zabývá se jeho ovládáním a distribucí digitalizovaných vzorků rádiového spektra. Další blok je kontrolní aplikace, vytváří instance GNU Radia, které zpracovávají vzorky z prvního bloku a po dekódování rámce je předávají zpět, následně je tento blok zpřístupňuje klientům. Posledním blokem je samotný klient, který ve webovém prohlížeči vidí přijaté rámce. Tyto tři bloky fungují samostatně a tak lze každý provozovat na jiném stroji, musí však být zajištěna možnost jejich vzájemné komunikace.
+
+\subsection{rtl-sdr}
+Tento modul dvěma hlavnímy prvky. Prvním prvkem je sofwarový projekt rtl-sdr vyvynutý organizací Osmocom (Open source mobile comunications) jeho ústřední částí je knihovna librtlsdr \cite{osmocom} sloužící k ovládání a přístupu k RTL-SDR a v podstatě všechny uživatelské aplikace postavené na RTL-SDR jí potřebují ke svému fungování. Tato knihovna závisí na další knihovně libusb, to je dáno použitím rozhraní USB pro připojení RTL-SDR k počítači. Kromě librtlsdr projekt obsahuje také několik utilit pro použití v terminálu:
+\begin{description}
+\item[rtl_fm]
+Přijímač FM vysílání využívající RTL-SDR. Dokáže RTL-SDR naladit na požadovanou frekvenci a jeho výstuem je zvuková stopa využitelná v terminálových přehrávačích.
+\item[rtl_sdr]
+Tato utilita již produkuje přímo I/Q vzorky, dokáže je zapsat do souboru nebo na standartní výstup.
+\item[rtl_test]
+Jak již název vypovídá slouží k testu funkčnosti knihovny librtlsdr.
+\item[rtl_tcp]
+Tato utilita funguje stejě jako rtl_sdr proud I/Q vzorků však neposílá na standartní výstup nebo do souboru ale tvéří z něj TCP/IP stream. Toho využívám v práci pro distribuci vzorků do instancí GNU Radia.
+\end{description}
+Druhý prvek je tvořen skriptem rtl_mus\cite{rtl_mus} a řeší slabinu rtl_tcp, tato utilita totiž dokáže posílat vzorky v každé chvíli pouze jednomu klientu. Rtl_mus tak zastoupí místo tohoto klienta a dále distribuuje prvky libovolnému množství koncových klientů.
+
+\subsection{kontrolní apliakce}
+Tento blok jsem implementoval v jazyce python. Jeho kostru tvoří microframework Flask. Pomocí něho vytvářím server na který se může připojit klient a ovládat tak celou aplikaci a zároveň sledovat přijaté IoT rámce. Pro dekodovani zprav vyuziva instance tříd  pro jednotlivé technologie.
+
+
+
+
+\section{Použité technologie a frameworky}
+\subsection{GNU Radio}
+\subsection{Flask}
+\subsection{SocketIO}
+\subsection{jQuery}
+
+
 \chapter{Výsledky}
 \chapter{Závěr}
 
@@ -377,3 +462,4 @@ Preamble (91) & Frame Sync (13) & ECC (32) & Payload (0 - 64) & MAC (16) & FCS (
 \bibliography{diplomka}
 
 \end{document}
+V
