@@ -38,7 +38,7 @@
     </param>
     <param>
       <key>generate_options</key>
-      <value>wx_gui</value>
+      <value>no_gui</value>
     </param>
     <param>
       <key>hier_block_src_path</key>
@@ -105,7 +105,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>867.8e6</value>
+      <value>868e6</value>
     </param>
   </block>
   <block>
@@ -133,6 +133,37 @@
     <param>
       <key>value</key>
       <value>1e6</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_message_debug</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(920, 64)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_message_debug_0</value>
     </param>
   </block>
   <block>
@@ -179,7 +210,7 @@
     </param>
     <param>
       <key>disable_channelization</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
       <key>disable_drift_correction</key>
@@ -246,7 +277,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1096, 148)</value>
+      <value>(928, 220)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -266,7 +297,7 @@
     </param>
     <param>
       <key>port</key>
-      <value>40868</value>
+      <value>5005</value>
     </param>
   </block>
   <block>
@@ -1565,7 +1596,7 @@
     </param>
     <param>
       <key>args</key>
-      <value></value>
+      <value>rtl_tcp=localhost:7373</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -1696,7 +1727,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -1719,7 +1750,7 @@
     <key>zeromq_push_msg_sink</key>
     <param>
       <key>address</key>
-      <value>tcp://127.0.0.1:5001</value>
+      <value>tcp://127.0.0.1:5002</value>
     </param>
     <param>
       <key>alias</key>
@@ -1735,7 +1766,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -1754,6 +1785,12 @@
       <value>100</value>
     </param>
   </block>
+  <connection>
+    <source_block_id>lora_lora_receiver_0</source_block_id>
+    <sink_block_id>blocks_message_debug_0</sink_block_id>
+    <source_key>frames</source_key>
+    <sink_key>print_pdu</sink_key>
+  </connection>
   <connection>
     <source_block_id>lora_lora_receiver_0</source_block_id>
     <sink_block_id>lora_message_socket_sink_0</sink_block_id>

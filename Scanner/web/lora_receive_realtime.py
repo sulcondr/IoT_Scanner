@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Lora Receive Realtime
-# Generated: Fri Dec 28 00:07:29 2018
+# Generated: Thu Jan  3 10:42:52 2019
 ##################################################
 
 
@@ -19,7 +19,7 @@ import time
 
 class lora_receive_realtime(gr.top_block):
 
-    def __init__(self, target_freq, sf):
+    def __init__(self, target_freq, sf, udp_port, rtl_address='rtl_tcp=localhost:7373'):
         gr.top_block.__init__(self, "Lora Receive Realtime")
 
         ##################################################
@@ -27,17 +27,19 @@ class lora_receive_realtime(gr.top_block):
         ##################################################
         self.target_freq = target_freq
         self.sf = sf
+        self.websever_address = websever_address = "127.0.0.1"
+        self.udp_port = udp_port
         self.samp_rate = samp_rate = 1e6
+        self.rtl_address = rtl_address
         self.downlink = downlink = False
         self.decimation = decimation = 1
         self.capture_freq = capture_freq = 868e6
         self.bw = bw = 125000
-        self.address = address = "tcp://127.0.0.1:5001"
 
         ##################################################
         # Blocks
         ##################################################
-        self.osmosdr_source_0 = osmosdr.source( args="numchan=" + str(1) + " " + 'rtl_tcp=127.0.0.1:7373' )
+        self.osmosdr_source_0 = osmosdr.source( args="numchan=" + str(1) + " " + rtl_address )
         self.osmosdr_source_0.set_sample_rate(samp_rate)
         self.osmosdr_source_0.set_center_freq(capture_freq, 0)
         self.osmosdr_source_0.set_freq_corr(0, 0)
@@ -50,7 +52,7 @@ class lora_receive_realtime(gr.top_block):
         self.osmosdr_source_0.set_antenna('', 0)
         self.osmosdr_source_0.set_bandwidth(0, 0)
 
-        self.lora_message_socket_sink_0 = lora.message_socket_sink('127.0.0.1', 5005, 0)
+        self.lora_message_socket_sink_0 = lora.message_socket_sink('webserver_address', udp_port, 0)
         self.lora_lora_receiver_0 = lora.lora_receiver(1e6, capture_freq, ([target_freq]), bw, sf, False, 4, True, False, downlink, decimation, False, False)
 
         ##################################################
@@ -58,6 +60,18 @@ class lora_receive_realtime(gr.top_block):
         ##################################################
         self.msg_connect((self.lora_lora_receiver_0, 'frames'), (self.lora_message_socket_sink_0, 'in'))
         self.connect((self.osmosdr_source_0, 0), (self.lora_lora_receiver_0, 0))
+
+    def get_websever_address(self):
+        return self.websever_address
+
+    def set_websever_address(self, websever_address):
+        self.websever_address = websever_address
+
+    def get_udp_port(self):
+        return self.udp_port
+
+    def set_udp_port(self, udp_port):
+        self.udp_port = udp_port
 
     def get_target_freq(self):
         return self.target_freq
@@ -78,6 +92,12 @@ class lora_receive_realtime(gr.top_block):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.osmosdr_source_0.set_sample_rate(self.samp_rate)
+
+    def get_rtl_address(self):
+        return self.rtl_address
+
+    def set_rtl_address(self, rtl_address):
+        self.rtl_address = rtl_address
 
     def get_downlink(self):
         return self.downlink
@@ -103,12 +123,6 @@ class lora_receive_realtime(gr.top_block):
 
     def set_bw(self, bw):
         self.bw = bw
-
-    def get_address(self):
-        return self.address
-
-    def set_address(self, address):
-        self.address = address
 
 
 def main(top_block_cls=lora_receive_realtime, options=None):
