@@ -34,40 +34,42 @@
 
         </td>
         <th valign="top">
-            <form id=switch action="" method="POST">
-                Sigfox
-                <input type="radio" name="sigfox" value="True"/> On
-                <input type="radio" name="sigfox" value="False" checked="checked"/> Off <br/>
-                LoRa
-                <input type="radio" name="lora" value="True"/> On
-                <input type="radio" name="lora" value="False" checked="checked"/> Off <br/>
-                <input type="submit">
-            </form>
+        <form id=switch action="" method="POST">
+            Sigfox
+            <input type="radio" name="sigfox" value="True"/> On
+            <input type="radio" name="sigfox" value="False" checked="checked"/> Off <br/>
+            LoRa
+            <input type="radio" name="lora" value="True"/> On
+            <input type="radio" name="lora" value="False" checked="checked"/> Off <br/>
+            <input type="submit">
+        </form>
 
-            <form id=settings action="" method="POST">
-                <select multiple id="channels" size="9">
-                    <option value="868100000">1: 868.1 Mhz</option>
-                    <option value="868300000">2: 868.3 Mhz</option>
-                    <option value="868500000">3: 868.5 Mhz</option>
-                    <option value="867100000">4: 867.1 Mhz</option>
-                    <option value="867300000">5: 868.1 Mhz</option>
-                    <option value="867500000">6: 868.3 Mhz</option>
-                    <option value="867700000">7: 868.5 Mhz</option>
-                    <option value="867900000">8: 867.1 Mhz</option>
-                    <option value="869525000">Downlink: 867.1 Mhz</option>
-                </select>
+        <form id=settings action="" method="POST">
+            <select multiple id="channels" size="9">
+                <option value="868100000">1: 868.1 Mhz</option>
+                <option value="868300000">2: 868.3 Mhz</option>
+                <option value="868500000">3: 868.5 Mhz</option>
+                <option value="867100000">4: 867.1 Mhz</option>
+                <option value="867300000">5: 868.1 Mhz</option>
+                <option value="867500000">6: 868.3 Mhz</option>
+                <option value="867700000">7: 868.5 Mhz</option>
+                <option value="867900000">8: 867.1 Mhz</option>
+                <option value="869525000">Downlink: 867.1 Mhz</option>
+            </select>
 
-                <select multiple id="sf" size="6">
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
-                    <option value="11">11</option>
-                    <option value="12">12</option>
-                </select>
-                <br/>
-                <input type="submit"/>
-            </form>
+            <select multiple id="sf" size="6">
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+            </select>
+            <br/>
+            <input type="submit"/>
+        </form>
+        </br>
+        <button id="btnClick">Clear</button>
 
         </th>
     </tr>
@@ -106,6 +108,11 @@
                 sigfox: sigfox
             });
         })
+        var clearButton = $('#btnClick').on('click' , function () {
+            $('#receive_table').replaceWith('<table style="width:100%" align=left id="receive_table">' +
+            '<tr><th>Technology</th><th>SNR (dB)</th><th>Frequency (Hz)</th><th>Bandwidth (Hz)</th>' +
+            '<th>Spreading factor</th><th>Length (B)</th><th>Payload</th></tr>')
+        });
     });
 
     socket.on('disconnect', function () {
