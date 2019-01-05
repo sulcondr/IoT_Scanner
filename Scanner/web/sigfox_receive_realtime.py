@@ -21,7 +21,7 @@ import sigfox
 
 class sigfox_receive_realtime(gr.top_block):
 
-    def __init__(self):
+    def __init__(self, udp_port):
         gr.top_block.__init__(self, "Sigfox Receive Realtime")
 
         ##################################################
@@ -31,6 +31,7 @@ class sigfox_receive_realtime(gr.top_block):
         self.taps = taps = firdes.low_pass(1,samp_rate,100,50,firdes.WIN_HAMMING)
         self.decim_second = decim_second = 250
         self.decim_first = decim_first = 5
+        self.udp_port = udp_port
 
         ##################################################
         # Blocks
@@ -60,7 +61,7 @@ class sigfox_receive_realtime(gr.top_block):
         self.digital_binary_slicer_fb_0_1_1_9 = digital.binary_slicer_fb()
         self.digital_binary_slicer_fb_0_1_1_8 = digital.binary_slicer_fb()
         self.digital_binary_slicer_fb_0_1_1_7 = digital.binary_slicer_fb()
-        self.blocks_socket_pdu_0_0_1 = blocks.socket_pdu("UDP_CLIENT", '127.0.0.1', '52002', 10000, False)
+        self.blocks_socket_pdu_0_0_1 = blocks.socket_pdu("UDP_CLIENT", '127.0.0.1', self.udp_port, 10000, False)
         self.blocks_message_debug_0_0_0_1_1 = blocks.message_debug()
         self.blocks_message_debug_0 = blocks.message_debug()
         self.blocks_complex_to_real_0_1_1_9 = blocks.complex_to_real(1)

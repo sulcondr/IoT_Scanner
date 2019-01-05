@@ -25,15 +25,15 @@ from threading import Thread
 from numpy import median
 import socket
 import time
-import atexit
 import configparser
 import argparse
 import binascii
 import struct
 import eventlet
+
 eventlet.monkey_patch()
 from lora_receive_realtime import lora_receive_realtime
-#from sigfox_receive_realtime import sigfox_receive_realtime
+from sigfox_receive_realtime import sigfox_receive_realtime
 
 app = Flask(__name__, static_url_path="")
 # app.config["SECRET_KEY"] = "secret!"
@@ -41,7 +41,6 @@ socketio = SocketIO(app)
 
 
 def parse_cli():
-
     parser = argparse.ArgumentParser()
     parser.add_argument("env", help="Enviorment SCANNER, PC, REMOMTE")
     args = parser.parse_args()
@@ -49,19 +48,32 @@ def parse_cli():
     return args
 
 
-def background_thread():
+def background_lora():
     # time.sleep(15)
     sock = socket.socket(socket.AF_INET,  # Internet
                          socket.SOCK_DGRAM)  # UDP
-    sock.bind((UDP_IP, UDP_PORT))
-    print "UDP listening on port", UDP_PORT
+    sock.bind((UDP_IP, UDP_LORA))
+    print "LoRa UDP listening on port", UDP_LORA
     while True:
         recv, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
         print recv
         data = bytearray(recv)
         parsed = parse_frame(data)
         message = make_message(parsed)
-        socketio.emit('gnu radio', message)
+        socketio.emit('lora', message)
+        time.sleep(0.10)
+
+
+def background_sigfox():
+    # time.sleep(15)
+    sock = socket.socket(socket.AF_INET,  # Internet
+                         socket.SOCK_DGRAM)  # UDP
+    sock.bind((UDP_IP, int(UDP_SIGFOX)))
+    print "Sigfox UDP listening on port", UDP_SIGFOX
+    while True:
+        recv, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
+        print recv
+        socketio.emit('sigfox', recv)
         time.sleep(0.10)
 
 
@@ -76,8 +88,8 @@ def make_message(parsed):
         'payload': str(parsed[14]).decode('latin-1').encode("utf-8")
     }
     print frame
-    #socketio.emit('gnu_radio', frame)
     return frame
+
 
 def parse_frame(data):
     test = binascii.hexlify(data)
@@ -89,7 +101,7 @@ def parse_frame(data):
     data_len = len(data)
     if header_len > data_len:
         print 'bad packet received'
-        return (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,)
+        return (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,)
     else:
         data_format = header_format + str(data_len - header_len) + 's'
         print data_format
@@ -110,7 +122,6 @@ def update_local_settings(settings):
         SETTINGS[key] = settings[key]
 
 
-
 def stop_lora_session(channel, sf):
     print 'stopping session ({}, {})'.format(channel, sf)
     LORA_SESSIONS[channel][sf].stop()
@@ -125,7 +136,8 @@ def start_lora_session(channel=868100000, sf=7):
         LORA_SESSIONS[channel] = {}
     if sf not in LORA_SESSIONS[channel]:
         try:
-            LORA_SESSIONS[channel][sf] = lora_receive_realtime(channel, sf, UDP_PORT, RTL_ADDRESS, DECIMATION, CAPTURE_FREQ)
+            LORA_SESSIONS[channel][sf] = lora_receive_realtime(channel, sf, UDP_LORA, RTL_ADDRESS, DECIMATION,
+                                                               CAPTURE_FREQ)
             print LORA_SESSIONS
             print 'session on channel {} and SF {} created'.format(channel, sf)
         except RuntimeError as error:
@@ -140,8 +152,18 @@ def start_lora_session(channel=868100000, sf=7):
             print 'session already started'
 
 
+def start_sigfox():
+    SIGFOX_SESSIONS['sigfox'] = sigfox_receive_realtime(UDP_SIGFOX)
+    try:
+        SIGFOX_SESSIONS['sigfox'].start()
+    except RuntimeError as error:
+        print error
+
+
 def resolve_settings(settings):
     print('received settings: ' + str(settings))
+    if SETTINGS['sigfox'] == 'True':
+        return "LoRa and Sigfox cannot be turned on at the same time"
     if settings['sf'] and settings['channel']:
         if ONE_SESSION and ((len(settings['sf']) > 1) or (len(settings['channel']) > 1)):
             message = 'Sorry only one channel and one sf allowed at once on SCANNER'
@@ -160,9 +182,9 @@ def resolve_settings(settings):
                     if sf not in sf_list:
                         stop_lora_session(channel, sf)
         for channel in channel_list:
-                for sf in sf_list:
-                    start_lora_session(channel, sf)
-                    update_local_settings({'lora': 'True'})
+            for sf in sf_list:
+                start_lora_session(channel, sf)
+                update_local_settings({'lora': 'True'})
         update_local_settings(settings)
         message = 'LORA: Started listening on channel(s) {} and decoding SF {}'.format(settings['channel'],
                                                                                        settings['sf'])
@@ -177,6 +199,12 @@ def turn_off_lora():
         for sf in LORA_SESSIONS[channel].keys():
             stop_lora_session(channel, sf)
 
+
+def turn_off_sigfox():
+    SIGFOX_SESSIONS['sigfox'].stop()
+    SIGFOX_SESSIONS['sigfox'].wait()
+    del SIGFOX_SESSIONS['sigfox']
+    print 'Turning off Sigfox'
 
 
 @app.route("/")
@@ -206,28 +234,30 @@ def change_settings(settings, methods=['GET', 'POST']):
 def handle_switch(settings, methods=['GET', 'POST']):
     print(settings)
     message = ''
-    if settings['lora'] != SETTINGS['lora']:
-        if settings['lora'] == "True":
-            start_lora_session()
-            settings['channel'] = 868100000
-            settings['sf'] = 7
-            message += 'LoRa receiver turned ON \n'
-        if settings['lora'] == "False":
-            turn_off_lora()
-            message += 'LoRa receiver turned OFF \n'
-            settings['channel'] = []
-            settings['sf'] = []
-        socketio.emit('log', message)
-    # if 'sigfox' in settings:
-    #     if settings['sigfox'] == "True":
-    #         sigfox.start()
-    #         message += 'Sigfox receiver turned ON \n'
-    #     if settings['sigfox'] == 'False':
-    #         sigfox.stop()
-    #         sigfox.wait()
-    #         message += 'Sigfox receiver turned OFF \n'
-    #     socketio.emit('log', message)
-    update_local_settings(settings)
+    if not ((settings['lora'] == "True") and (settings['sigfox'] == "True")):
+        if settings['lora'] != SETTINGS['lora']:
+            if settings['lora'] == "True":
+                start_lora_session()
+                settings['channel'] = 868100000
+                settings['sf'] = 7
+                message += 'LoRa receiver turned ON \n'
+            if settings['lora'] == "False":
+                turn_off_lora()
+                message += 'LoRa receiver turned OFF \n'
+                settings['channel'] = []
+                settings['sf'] = []
+            socketio.emit('log', message)
+        if settings['sigfox'] != SETTINGS['sigfox']:
+            if settings['sigfox'] == "True":
+                start_sigfox()
+                message += 'Sigfox receiver turned ON \n'
+            if settings['sigfox'] == 'False':
+                turn_off_sigfox()
+                message += 'Sigfox receiver turned OFF \n'
+            socketio.emit('log', message)
+        update_local_settings(settings)
+    else:
+        socketio.emit('log', "LoRa and Sigfox cannot be turned on at the same time")
     socketio.emit('settings_update', SETTINGS)
 
 
@@ -250,9 +280,11 @@ if __name__ == "__main__":
     RUN_TCP_MUS = config.getboolean(env, 'RUN_TCP_MUS')
     HTTP_PORT = 5000
     UDP_IP = "127.0.0.1"
-    UDP_PORT = 5005
+    UDP_LORA = 5005
+    UDP_SIGFOX = '5006'
     SETTINGS = {'lora': 'False', 'sigfox': 'False', 'channel': [], 'sf': []}
     LORA_SESSIONS = {}
+    SIGFOX_SESSIONS = {}
     DECIMATION = 1
     CAPTURE_FREQ = 868e6
 
@@ -269,10 +301,12 @@ if __name__ == "__main__":
         subprocess.Popen(['./rtl_mus/rtl_mus.py'])
         # subprocess.Popen('exec ncat localhost 1234 | ncat -4l 7373 -k --send-only --allow 127.0.0.1', shell=True)
 
-
-    thread1 = Thread(target=background_thread)
+    thread1 = Thread(target=background_lora)
     thread1.daemon = True
     thread1.start()
 
+    thread2 = Thread(target=background_sigfox)
+    thread2.daemon = True
+    thread2.start()
 
     socketio.run(app, host="0.0.0.0", port=HTTP_PORT, debug=False)
