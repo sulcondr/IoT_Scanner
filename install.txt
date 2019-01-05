@@ -1,0 +1,28 @@
+sudo apt upgrade
+sudo apt install build-essential cmake git libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev libboost-program-options-dev libboost-test-dev liblog4cpp5-dev libuhd-dev gnuradio-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libgtest-dev gnuradio libx11-dev
+
+sudo apt install swig fftw3 python-wxgtk2.8 (https://wiki.wxpython.org/BuildWxPythonOnRaspberryPi) automake autoconf
+pip install (scipy numpy) mako (wxpython)
+
+git clone https://github.com/gnuradio/volk.git
+cd volk
+mkdir build
+cd build
+cmake ..
+make
+make test
+sudo make instal
+
+
+git clone git://github.com/jgaeddert/liquid-dsp.git
+cd liquid-dsp
+./bootstrap.sh
+./configure
+make
+sudo make install
+
+
+pan juraj lauko drscc - tmo icn
+nova vpn nepujde toho vice, ssh 3389 
+
+bdmp na nemecke servery jump server

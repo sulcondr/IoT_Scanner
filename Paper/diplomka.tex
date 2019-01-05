@@ -38,6 +38,8 @@ Fakt sám \ldots
 \usepackage{rotating}
 \usepackage{booktabs}
 \usepackage{multirow}
+\usepackage{biblatex}
+\bibliography{diplomka.bib}
 \begin{document}
 
 
@@ -45,16 +47,53 @@ Fakt sám \ldots
 \maketitle
 
 \chapter{Úvod}
+Nejlepsi prace na svete
 
-Foo bar
-\chapter{Softwérově definované rádio}
-\section{Úvod do SDR}
+\part{Seznámení s problematikou}
+\chapter{Internet věcí}
+Internet věcí je velmi rychle se rozvíjející trend v oblasti telekomunikační techniky. Vzhledem k snaze propojit do sítě stále více a více zařízení, která mají často specifické požadavky je potřeba vytvořit nové technologie, které by lépe vyhovovali tomuto použití. Tento proces již započal a na trhu existuje velké množství variant. 
+Každá technologie je uzpůsobená pro určité způsoby využití, a tak se v mnohém liší. Mají však i společné atributy vyplývající z obecných požadavků pro IoT.\\
+Je potřeba aby takové sítě byly velkokapacitní a mohly tak obsloužit velké množství zařízení. Dle odhadů bylo do sítí IoT v roce 2017 připojeno již přes dvacet miliard zařízení a jejich počet zatím bude nadále prudce stoupat. \cite{statista2018} I přesto že povětšinou se jedná o zařízení generující jen malý síťový provoz, celkový provoz sítě je díky jejich velkému množství obrovský.\\
+Dále je, vzhledem k motivaci připojit zařízení co nejvíce, nutné, aby v síti mohla pracovat i velmi jednoduchá zařízení, která jde snadno a levně vyrobit. Jen tak bude možné vybudovat rozsáhlé senzorové sítě o tisících prvků nebo připojit opravdu většinu zařízení každé domácnosti.\\
+Posledním univerzálním požadavkem, kterým se IoT od běžných sítí odlišují jsou velké nároky na energetickou úspornost. Připojená zařízení totiž musí často fungovat nezávisle na rozvodných sítích elektrické energie, a tak musí spoléhat na akumulátory. Ty mají omezenou velikost a kapacitu a často je jejich výměna či dobití nepraktické nebo dokonce nemožné. I přesto však musí být podobná zařízení schopná provozu i několik let.
+\\
+Dale povidani o tom proc je dulezite do IoT integrovat SDR (rychly vyvoj, velka kompativbilita, univerzalni gateway, cognitive radio)
+
+\section{Rozdělení technologií pro IoT}
+\subsection{Dle využívaných frekvencí}
+Velkým faktorem při výběru technologie pro použití pro účely internetu věcí jsou používané frekvence. Rádiové spektrum je totiž omezeným zdrojem, a tak jsou pro volné použití vyhrazeny jen určité frekvence, a i pro vysílání v těchto bezlicenčních pásmech existují omezení a pravidla. Další pásma lze využívat na základě licence od Českého telekomunikačního úřadu. Sítě pro internet věcí jsou provozovány na obou typech frekvencí a z toho vyplývají pro danou síť vždy jak výhody, tak nevýhody.\\
+Výhodou bezlicenčních pásem je především jednoduchost a cena nasazení. Není třeba žádat o žádné licence, čekat na jejich schválení, platit za ně. Na druhou stranu je pak ale nutné počítat s tím, že na stejných frekvencích může vysílat i kdokoliv jiný a způsobovat tak vzájemnou interferenci. Dále je nutné vždy dodržovat závazná pravidla pro použití dané frekvence. To se týká zejména maximálního vysílaného výkonu, což může ohrozit požadovaný dosah. Dalším omezením často bývá maximální povolená doba využívání daných prostředků. Můžeme tak například být omezeni počtem zpráv které je možné za určitý časový úsek přenést.\\
+Náklady na provoz sítě pracující v licencovaném pásmu pak bývají větší, protože se do nich musí započítat poplatky za licenci. Na druhou stranu pak má provozovatel mnohem větší svobodu s nakládáním s daným pásmem a může tak mít vysílače s vyšším výkonem a nemusí se bát rušení od jiných zařízení, než od těch jejichž provoz sám v síti povolí.
+
+\subsection{Dle architektury sítě}
+Na základě předpokládaného využití je vhodné zvolit i architekturu a topologii sítě.\\
+Nejčastější topologií bývá hvězda, její název je odvozen od tvaru hvězdy, kdy uprostřed je vždy centrální prvek a z něho se rozebíhají paprsky ke všem připojeným zařízením. Ta jsou propojena jen s centrálním prvkem, a ne spolu navzájem.  Výhoda této topologie je, že pokud selže nebo se odpojí jedno z připojených zařízení nezpůsobí to žádné komplikace pro ostatní.  Dále je v této topologii přítomný řídící prvek, který má většinou řádově vyšší výpočetní kapacitu a dostupné zdroje a může tak síť řídit a jednotlivé uzly mohou být o to jednodušší a úspornější. To také nahrává modelu, kdy provozovatel vytvoří pokrytí určitého území svou technologií a uživatelé se již nemusí o nic starat a jen za poplatek využívají v již vytvořené síti svá koncová zařízení. Na druhou stranu v případě selhání centrálního prvku přestává fungovat celá sít. To lze samozřejmě řešit redundancí takového prvku, avšak to dále přispívá, k již tak vysokým nákladům na budování infrastruktury pro síť tohoto typu.\\
+Pravým opakem v tomto smyslu je síť postavená na smíšené topologii (mesh), kde jsou si většinou všechny prvky rovny a jsou propojeny navzájem mezi sebou každý aspoň s jedním sousedem.  Taková síť často nevyžaduje žádnou předpřipravenou infrastrukturu, v krajním případě může opravdu jít jen o pouhé rozhození senzorů po krajině. Většinou také síť nevyřadí ani selhání jakéhokoliv jednotlivého prvku, jeho úlohu jednoduše převezme prvek jiný. Na druhou stranu neexistuje centrální prvek, který by měl automaticky přehled o všech ostatních a mohl je tak snadno řídit. Místo toho jsou potřeba složité algoritmy, které na základě informací od jednotlivých uzlů určují vhodné směrování zpráv síti, časování a podobně. I kdyby byly takové algoritmy sebedokonalejší vyžadují spolupráci a tím vyšší energetický výdej všech uzlů. Zároveň má tato topologie často nižší celkovou kapacitu, protože zprávy často musí putovat   přes mnoho uzlů, než se dostanou k hraničnímu, který komunikuje s vnějším světem.
+
+\subsection{Dle rozsahu sítě}
+Správnou technologii budeme posuzovat i na základě rozsahu. Naše požadavky se zásadní promění v závislosti na tom, zda vytváříme mezinárodní síť pokrývající velké území nebo chceme pokrýt jen jednu domácnost. Pro pojmenování rozsahu sítě jsou standardně používány tyto termíny:
+\begin{description}
+\item [PAN (Personal area network)]
+Tento akronym popisuje síť, která zahrnuje osobní prostor člověka. V dnešní době to může znamenat spojení zařízení jako mobilní telefon, chytré hodinky, sluchátka, hrudní pás nebo i senzor cukru v krvi. Často se pro tento typ sítí používají technologie jako Bluetooth, Ant, MiWi nebo Zigbee.
+
+\item [LAN (Local area network)]
+Místní síť je název pro síť, která je většinou fyzicky omezena jednou budovou, může to být domácnost, škola nebo menší firma. Typickými zástupci bezdrátových technologií této kategorie jsou WiFi a Z-Wave.
+
+\item [MAN (Metropolitan area network)]
+Tento druh sítě propojuje zařízení v rámci větších oblastí jako jsou města a univerzitní kampusy. V tomto rozsahu jsou typickými zástupci WiMax a IQRF.
+
+\item [WAN (Wide area network)]
+Síť pokrývající velká území, například celé státy. Zástupci z této kategorie jsou LoRaWAN, Sigfox nebo NB-IoT.
+\end{description}
+
+\chapter{Softwérově definované rádio} \label{chapter:sdr}
+\section{Úvod do SDR} 
 Značná část historie použití rádiových vln využívala rádia, která byla implementována čístě v hardware. Pro každou úpravu  vlastností rádia, tak bylo zapotřebí ho fyzicky upravit. S rozmachem výpočetní techniky však přišel vývoj i v oblasti rádia a na světlo světa se tak nejdříve dostala SCR (Software controled radio), která umožňovala v omezené míře ovlivňovat některé funkce a pozdějí i rádia SDR, která mohou být použita univerzálně díky digitálnímu zpracování signálu (DSP -Digital signal processing). \\
-První známe nasazení SDR v praxi bylo v armádě, jednalo se o systém SPEAKeasy. Systém vyvinula DARPA v roce 1991 a umožňoval díky softwarové implementaci komunikovat prostřednictvím 10 různých vojenských protokolů na frekvencích od 2 MHz po 2 Ghz. SPEAKeasy byl připraven i na přidání dalších modulací a protokolů. O rok později již vyšel první článek o SDR na IEEE, napsal ho Joe Mitola a je tak považován za kmotra SDR. \ref{https://www.nutaq.com/blog/short-history-software-defined-radio-sdr-technology}\\
+První známe nasazení SDR v praxi bylo v armádě, jednalo se o systém SPEAKeasy. Systém vyvinula DARPA v roce 1991 a umožňoval díky softwarové implementaci komunikovat prostřednictvím 10 různých vojenských protokolů na frekvencích od 2 MHz po 2 Ghz. SPEAKeasy byl připraven i na přidání dalších modulací a protokolů. O rok později již vyšel první článek o SDR na IEEE, napsal ho Joe Mitola a je tak považován za kmotra SDR. \cite{sdrHistory2010}\\
 I přes tyto slibné začátky a podchycení jeho teoretických možností se SDR rozšiřovalo poměrně pomalu a jeho význam narostl až v podlední době s rozmachem levných výkoných integrovaných čipů. Velkou motivací využití SDR do budoucna jsou tzv. kognitivní rádia, která se dokáži přizpůsobit aktualnímu stavu spektra.
 \section{Fungování SDR}
 Základním znakem každého SDR je, že je značná jeho část realizována jako software běžící na programovatelném a configurovatelném HW zařízení. Toto zařízení můžeme nazvat rádiovou platformou (radio platform) a SW část jako aplikační rámec (aplication framework). Pokud je použitý jednotný standard tak tyto části mohou tvořit univerzální a znovupoužitelné komponenty a tak ušetřit prostředky a usnadnit jakékoliv upgrady.\\
-Jedním z možných standardů je armádou používaná Softwarová komunikační architektura (Software Communication Architecture) vyvinutá  v programu JTRS (Joint Tactical Radio System). Tuto architekturu používá většina armádních SDR. \ref{Eged, B.; Babják, B. (2006) Universal Software Defined Radio Development Platform.}
+Jedním z možných standardů je armádou používaná Softwarová komunikační architektura (Software Communication Architecture) vyvinutá  v programu JTRS (Joint Tactical Radio System). Tuto architekturu používá většina armádních SDR. \cite{sdr2006}
 Jinou možností je de facto standard pro rádio amatéry - GNU Rádio, kterému je v této práci věnována samostatná kapitola \ref{kapitola Gnu radio}.\\
 Pokud na rádio nechceme koukat jako na krabičku ke které se připojí anténa, můžeme identifikovat jednotlivé funkční bloky:
 \begin{enumerate}
@@ -69,7 +108,7 @@ Uživatelské rozhraní
 \end{enumerate}
 Pokud se jedná o SDR můžeme ale zvolit i jednodušší vysokoúrovňový pohled a identifikovat tak tři prvky modelu: Zpracování analogového signálu (front-end), konverze domény (A/D, D/A) a digitální zpracování signálu (back-end), viz obrázek \ref{blokySDR}
 \begin{figure}
-\caption{Implementace rádia na základě SDR \ref{Eged, B.; Babják, B. (2006) Universal Software Defined Radio Development Platform}}
+\caption{Implementace rádia na základě SDR\cite{sdr2006}}
 \includegraphics[width=1\textwidth]{./images/funkcniSDRbloky.png}
 \label{blokySDR}
 \end{figure}
@@ -79,7 +118,7 @@ Konvertor domény jak již název napovída převádí anologový signál na dig
  Poslední prvek tedy backend kde probíhá digitální zpracování je založen na FPGA a/nebo DSP programovatelných počítačích, na kterých běží software.\\
 Převod mezi analogovou a digitální  doménou se může odehrát v různých místech zpracování viz obrázek  \ref{SDRconversion} a podle toho lze systémy kategorizovat.
 \begin{figure}
-\caption{Klasifikace SDR dle místa konverze domény\ref{bakalarka webrx}}
+\caption{Klasifikace SDR dle místa konverze domény\cite{andrásretzler2014}}
 \includegraphics[width=1\textwidth]{./images/SDRconversion.png}
 \label{SDRconversion}
 \end{figure}
@@ -91,11 +130,11 @@ Zde se již část zpracování signálu odehrává v SW. Signál v základním 
 \item[Digitální mezifrekvence (Digital IF)]
 V této kategorii probíhá vzorkování již na mezifrekvenci a předchází mu konverze z rádiové frekvence a filtrování implementované v HW. Podobné systémy jsou využívány radioamatéry nebo například v námořních rádiích, DSP zde slouží k filtrování šumu a demodulaci. 
 \item[Digitální rádiová frekvence (Digital RF)]
-I při vzorkování přímo RF je potřeba signál nejdříve zesílit a filtrovat až poté je možný jeho převod pomcí ADC. Následně probíhají všechny úkony již v SF. Příkladem systému z této kategorie může být HPSDR Mercury \ref{https://www.tapr.org/kits_merc.html} .
+I při vzorkování přímo RF je potřeba signál nejdříve zesílit a filtrovat až poté je možný jeho převod pomcí ADC. Následně probíhají všechny úkony již v SF. Příkladem systému z této kategorie může být HPSDR Mercury \cite{tapr} .
 \end{description}
-Toto rozdělení však nepočítá s přímou kvadraturní konverzí RF kde je vynechán mezikrok převodu na IF a převádí se rovnou na BB. V takovém případě se RF signál s reálnými hodnotami po zesílení a filtraci smíchá s výstupem oscilátoru s komplexním výstupem (sínus a kosínus), prožene fitrem dolní propust který odstraní vysoké frekvenční komponenty jako boční pásmo vzniklé smišením a poté navzrokuje dvěma ADC.\\
+Toto rozdělení však nepočítá s přímou kvadraturní konverzí RF kde je vynechán mezikrok převodu na IF a převádí se rovnou na BB. V takovém případě se RF signál s reálnými hodnotami po zesílení a filtraci smíchá s výstupem oscilátoru s komplexním výstupem (sínus a kosínus), prožene fitrem dolní propust který odstraní vysoké frekvenční komponenty jako boční pásmo vzniklé smišením a poté navzrokuje dvěma ADC.\cite{andrásretzler2014}\\
 \begin{figure}
-\caption{Blokové schéma SDR s přímou kvadraturní konverzí RF na BB\ref{http://www.ti.com/lit/ug/slwu085/slwu085.pdf}}
+\caption{Blokové schéma SDR s přímou kvadraturní konverzí RF na BB\cite{directdown2013}}
 \includegraphics[width=1\textwidth]{./images/principSDR.png}
 \label{principSDR}
 \end{figure}
@@ -109,8 +148,8 @@ Pokud si v minulosti chtěl někdo pořídit SDR musel počítat s částkami mn
 Celé to začalo v roce 2008, kdy Realtek představil chipset RTL2832U s  DVB-T COFDM demodulátorem, hlavním učelem tohoto čipu a na něm postavených USB donglů byl příjem evropského standardu pro pozemní digitální televizní vysílání. Nabízel však i příjem digitálního rádia DAB a analogového FM. Tento malý detail se později stal velmi podstatným.\\
 V roce 2010 totiž Eric Fry při pokusech o napsání ovladačů tohoto DVB-T donglu odposlouchával USB pakety během používání FM aplikace pro Windows. Eric zjistil, že narozdíl od přijmu DVB-T, kdy demodulace probíhá přímo na čipu, při příjmu FM, DAB a DAB+ demodulace probíhá až v SW počítače a přes USB se tedy přenáší I/Q vzorky, jeho primárním cílem však byli ovladače pro Linux a tak nezačal s vývojem pro použití jako SDR.\\
 Informace se sice rozšířila, ale až do roku 2012 nenastal žádný větší pokrok. V tomto roce se o tento DVB-T přijímač od Realteku začal zajímat Antti Palosaari. Ten potvrdil možnost využití jako SDR díky přístupu k 8-bitovým I/Q vzorkům a začal s vývojem potřebného SW. Díky navázání spolupráce s organizací Osmocom, která se v té době vyvýjela vlastní SDR založené na tuneru E4000, což byl jeden z tunerů používaných v DVB-T přijímačích Realtek, práce nabrala obrátek a brzy byl vyvinut driver SW pro jednoduché použití těchto USB donglů jako SDR. Nejdůležitějším krokem bylo nejspíše vyvinutí ovladače pro linux, o to se v organizaci Osmocom postaral Steve Markgraf.
-\ref{https://rtlsdr.org/#history_and_discovery_of_rtlsdr}
-\ref{https://coherent-receiver.com/publications}
+\cite{rtlhistory2016}
+\cite{rtlhistory2018}
 \\
 Tento počin nastartoval éru RTL-SDR a na jeho základě tak vzniklo obrovské množství projektů všeho druhu, jmenovat budu jen pár těch zajímavějších (pokud čtete tu práci ve formátu PDF můžete kliknutím na projekt přejít na stránky, které se mu věnují):\\ \href{https://www.rtl-sdr.com/rtl-sdr-used-as-a-spectrum-analyzer/}{Spektrální analyzér}, \href{https://www.rtl-sdr.com/rtl-sdr-tutorial-analyzing-gsm-with-airprobe-and-wireshark/}{Odposlech GSM}, \href{https://www.rtl-sdr.com/adsb-aircraft-radar-with-rtl-sdr/}{Sledování letadel pomocí ADSB}, \href{https://www.rtl-sdr.com/using-rtl-sdr-cheap-entropy-source/}{Generátor nahodných čísel}, \href{https://www.rtl-sdr.com/receiving-weather-balloon-data-with-rtl-sdr/}{Příjem dat meterologických balónů}, \href{https://www.rtl-sdr.com/meteor-reflection-observations-with-rtl-sdr/}{Sledování meteoritů}, nebo \href{https://technet.idnes.cz/odposlech-site-tetra-a-mestske-policie-dhy-/tec_technika.aspx?c=A160913_145939_tec_technika_vse}{Odposlech vysílaček městské policie}\\
 
@@ -118,14 +157,14 @@ Tento počin nastartoval éru RTL-SDR a na jeho základě tak vzniklo obrovské 
 RTL-SDR je sice i v současné době to nejlevnější SDR, jeho kvalita však může být pro mnohá použití nedostatečná a tak v posledních letech vzniklo mnoho dalších dostupných SDR. Ta jsou sice o něco dražší, ale díky tomu, že jde o HW pro použití jako SDR navržený, mají větší rozsah, rozlišení, vzorkovací frekvenci a některá mohou kromě přijmu i vysílat.
 \begin{description}
 \item[USRP (Universal Software Radio Peripheral)]
-USRP je celá řada produktů od společnosti Ettus Research. Hlavním vývojářem je Matt Ettus a první USRP spatřilo světlo světa již v roce 2008. V současnosti začínají ceny okolo 20 tisíc korun a v základu má USRP rozsah od 70 MHz po 6 GHz, tento rozsah však lze rozšířit pomocí přídavných desek. Starší hardware je uvolněn jako opensource a veškeré ovladače také. Z těchto důvodů jsou rádia USRP populární ve vědě, na universitách i mezi amatéry. USRP je kromě jiných podporované v GNU-Radio a Matlab SimuLinku a kromě příjmu zvládá i vysílat. \ref{https://www.ettus.com/about}
+USRP je celá řada produktů od společnosti Ettus Research. Hlavním vývojářem je Matt Ettus a první USRP spatřilo světlo světa již v roce 2008. V současnosti začínají ceny okolo 20 tisíc korun a v základu má USRP rozsah od 70 MHz po 6 GHz, tento rozsah však lze rozšířit pomocí přídavných desek. Starší hardware je uvolněn jako opensource a veškeré ovladače také. Z těchto důvodů jsou rádia USRP populární ve vědě, na universitách i mezi amatéry. USRP je kromě jiných podporované v GNU-Radio a Matlab SimuLinku a kromě příjmu zvládá i vysílat. \cite{etusresearch}
 \item[bladeRF]
-Již v roce 2012 v reakci na RTL-SDR začal vývoj bladeRF. Momentálně se nachazí již ve svojí druhé verzi a zajímavostí je, že jedna z variant obsahuje i FPGA pro HW akceleraci digitálního zpracování. Cena začíná na 11 tisích za verzi bez FPGA, verze s FPGA stojí 16 tisíc korum. 
+Již v roce 2012 v reakci na RTL-SDR začal vývoj bladeRF. Momentálně se nachazí již ve svojí druhé verzi a zajímavostí je, že jedna z variant obsahuje i FPGA pro HW akceleraci digitálního zpracování. Cena začíná na 11 tisích za verzi bez FPGA, verze s FPGA stojí 16 tisíc korum. \cite{nuand}
 \item[HackRF]
-Toto SDR vyvinuté Michaelem Ossmanem v roce 2013 se díky úspěšné kampani na Kickstarter.com  začalo prodávat v roce 2014 a jeho cena je cca 7000 kč. Michael Ossman se již dříve proslavil vývojem zařízením pro odposlech bluetooth Ubertooth a HackRF navazuje jako další velmi kvalitní produkt. HackRF dokáže vysílat i přijímat a má rozsah má od 30 MHz po 6 GHz a zvládá i 2x2 MIMO. \ref{https://www.kickstarter.com/projects/mossmann/hackrf-an-open-source-sdr-platform}
+Toto SDR vyvinuté Michaelem Ossmanem v roce 2013 se díky úspěšné kampani na Kickstarter.com  začalo prodávat v roce 2014 a jeho cena je cca 7000 kč. Michael Ossman se již dříve proslavil vývojem zařízením pro odposlech bluetooth Ubertooth a HackRF navazuje jako další velmi kvalitní produkt. HackRF dokáže vysílat i přijímat a má rozsah má od 30 MHz po 6 GHz a zvládá i 2x2 MIMO. \cite{hackrf}
 \item[AirSpy]
 AirSpy je asi nejlevněší alternativa k RTL-SDR a podobně jako ono neumí vysílat. Velkou popularitu AirSpy získalo zejména díky úzkému propojení s SDR\#  což je software pro analýzu a demodulaci rádiových signálů. V nejnovější verzi má rozsah od 24 MHz po 1,8 GHz a podporuje i externí hodiny pro použití vyžadující synchronizaci.
-\ref{https://airspy.com/}
+\cite{airspy}
 \end{description}
 
 
@@ -145,46 +184,120 @@ FPGA (kLE)              & Ne (dražší verze Ano) & 49                  & 301  
 \end{ctucolortab}
 \caption{Přehled dospuných SDR}
 \label{tab:sdr}
-\cite{https://kb.ettus.com/B200/B210/B200mini/B205mini, https://www.rtl-sdr.com/review-airspy-vs-sdrplay-rsp-vs-hackrf/, https://www.itead.cc/airspy.html, http://www.taylorkillian.com/2013/08/sdr-showdown-hackrf-vs-bladerf-vs-usrp.html}
+\cite{etusresearch}
+\cite{sdrreview2016}
+\cite{itead}
+\cite{sdrshowdown}
 \end{sidewaystable}
 
-\begin{table}
-\begin{ctucolortab}
-\begin{tabular}{cc}
-\bfseries Foo & \bfseries Bar \\\Midrule
-foo1 & bar1 \\
-foo2 & bar2
-\end{tabular}
-\end{ctucolortab}
-\caption{Foobar.}
-\label{tab:foobar}
-\end{table}
+\chapter{Technologie IoT}
+Po předchozím průzkumu provedeném v rámci předmětu B2MPROJ6 - Projekt jsem se rozhodl zaměřit na dvě technologie pro IoT, jedná se o LoRaWAN a Sigfox. Tyto technologie jsem zvolil, protože jako jediné mají rozvinutou infrastrukturu v ČR a zároveň vysílají v pásmu, které se nachází v rozsahu RTL-SDR, které jsem plánoval pro přehledový přijímač použít.\\
+V následující kapitole tyto technologie představím jak z hlediska obecného, tak z hlediska rádiové vrstvy.
 
-\chapter{LoRa}
-\section{Fyzická vrstva (LoRa PHY)}
-\subsection{Modulace}
-Modulační schéma LoRa je založeno na Chirp Spread Spread Spectrum (Cvrlikající rozprostřené spektrum) modulaci  (Goursaud and Gorce, 2015) a definuje jeden “cvrk” jako jeden symbol  (Semtech, 2015a). Standardní nemodulovaný lineární cvrk se nazývá “základní cvrk” a může být matematicky popsán jako funkce času t takto (Mann and Haykin, 1991):
-\begin{align}x(t)=e^{i(\varphi_{0}+2\pi(\frac{k}{2}t^{2} + f_{0}t))}
-\label{eq:lora1}
-\end{align}
-Kde  $\varphi_{0}$ je počáteční fáze, $k$ je rychlost změny frekvence a $f_{0}$ je počáteční frekvence. Pokud je šířka pásma kanálu $BW$, tak parametry $f_{0}$ a $k$ jsou nastaveny tak, že se frekvence zvětšuje od $f_{0}-\frac{BW}{2}$ po $f_{0}+\frac{BW}{2}$ během periody $T$ cvrku. Tím pádem je $f_{0}=\frac{BW}{2}$ and $k = \frac{BW}{T}$. Doba trvání jednoho cvrku závisí na šířce pásma signálu a na parametru nazývaném činitel rozprostření (Spreading Factor - SF) dle vztahu $T = \frac{2^{SF}}{BW}$ (Seller and Sornin, 2014).
-Vzhledem k tomu, že $x(t + nT) = x(t)$ kde $n\in \mathbb{N}$, celočíselná hodnota $i \in \{0, 1\}^{SF}$ může být namodulována na základní cvrk pomocí časového posunu $\hat{t} = Gray^{-1}(i)\frac{T}{2^{SF}}$ aplikovaného na signál ve vztahu \eqref{eq:mod1},  kde $Gray^{1}$ je dekódování Grayova kódu (Gray, 1953). Touto cestou je symbol v podstatě kvantovaný na $2^{SF}$ časových intervalů rozdělujích šířku pásma, nazýváme je “chipy” a právě ony určují $i$. Při příjmu modulovaného cvrku s neznámým časovým posuvem $x(t + \hat{t})$, může být hodnota cvrku zrekonstruována navzorkováním signálu vzorkovací frekvencí chipů a výpočtem:
-\begin{align}i= Gray(arg \max (\lvert FFT(x(t+ \hat{t}) \odot \overline{x(t)}) \rvert ))
-\label{eq:lora2}
-\end{align}
-Kde $\overline{x(t)}$ značí komplexně sdružený základní cvrk, $\odot$ značí multiplikaci po prvcích, $\lvert FFT(x) \rvert$ zančí velikost Rychlé Fourierovi transformace $x$, a $Gray$ je Grayovo kódování. 
+\section{LoRa}
+\subsection{Obecné informace}
+LoRaWan je klasická ukázka Low-Power Wide-Area Network (LPWAN) navržené pro
+prostředí internetu věcí. Vyniká tedy hlavně v oblasti životnosti na baterii, dosahu, ceně a
+celkové kapacitě sítě. \\
+Každá implementace této technologie jako LPWAN se skládá ze dvou částí. LoRaWAN
+definuje komunikační protokol a síťovou architekturu a LoRa zajišťuje fyzickou vrstvu přenosu
+\cite{loraalliance}.\\
+LoRa (Long Range) je fyzická vrstva používaná v sítích LoRaWAN. Je, jak již název napovídá,
+navržena pro komunikaci na velké vzdálenosti a na rozdíl od mnohých starších systémů, které
+využívají klíčování frekvenčním posunem (FSK), používá chirp rozprostřené spektrum \cite{loraalliance2}.
+Díky tomu je možné pomocí jen několika málo bran nebo základových stanic pokrýt velká
+území. Například celé město jednou jedinou branou. Z toho plyne možnost velmi rychle,
+s malými náklady a infrastrukturou pokrýt území celé země.\\
+LoRaWAN definuje komunikační protokol a síťovou architekturu. Zvolená topologie síťové
+architektury je hvězda. To má oproti smíšené topologii výhodu v tom, že každý uzel sítě přenáší
+jen svoje data a nemusí tak využívat své zdroje pro přenos pro něj irelevantních informací.
+Zároveň je taková síť jednodušší na správu a má vyšší celkovou kapacitu. Na druhou stranu je
+dosah omezen na dosah jednoho uzlu.\\
+Takováto architektura sítě by se dala připodobnit klasické buňkové mobilní síti, ale na rozdíl
+od ní není nikdy uzel přiřazen specifické základové stanici, při pohybu uzlu tedy odpadá
+handover. Místo toho paket z každého uzlu přijmou všechny brány v dosahu a předají ho na
+společný server. Ten vyhodnotí přijaté pakety, duplikované zahodí, zvolí ideální bránu pro
+odpověď, adaptivní přenosovou rychlost a podobně.\\
+Další úspora baterie spočívá v časování komunikace. Uzly v síti nejsou synchronizované
+s bránami. K řízení provozu je použit protokol ALOHA. Zařízení tak vysílají jen pokud mají
+data k odeslání nebo v naplánovaných intervalech a nemusí se budit pro udržování
+synchronizace. Pro komunikaci směrem k uzlům existují tři způsoby podle tříd zařízení. Třída
+A má pro downlink definovaná okna jen vždy po ukončení uplinku. Třída B má navíc
+naplánovaná další periodicky se opakující okna, kdy je zařízení připraveno přijímat a třída C
+určená zejména pro zařízení, pro která není energetická náročnost tak kritická, je připravena na
+příjem kontinuálně.\\
+Pro zachování velké celkové kapacity i při poměrně malém počtu bran musí tyto být schopné
+přijímat data od mnoha uzlů zároveň. Toho je docíleno využitím adaptivních rychlostí přenosu
+a vícekanálovým a vícemodemovým vysílačem. Díky použití rozprostřeného spektra lze také
+využít ortogonality signálů používajících jiný činitel rozprostření. Pokud by ani tak celková
+kapacita nestačila, je technologie LoRaWAN velmi dobře horizontálně škálovatelná. Přidáním
+dalších bran v oblasti mohou zařízení vysílat menším výkonem a vyšší přenosovou rychlostí a
+tím omezit přeslechy a kapacita tak může být rozšířena 6-8krát.\\
+I přes důraz na nízkou energetickou náročnost LoRaWAN řeší i bezpečnost provozu. Na síťové
+úrovni je řešena autenticita uzlů a bran a na aplikační úrovni je použito AES šifrování pro skrytí
+dat před neoprávněným odposlechem.
+\subsection{Specifikace}
+\begin{figure}
+\caption{Specifikace LoRaWAN v jednotlivých regionech \cite{loraalliance2}}
+\includegraphics[width=1\textwidth]{./images/specifikaceLora.png}
+\label{fig:loraSpec}
+\end{figure}
+\begin{itemize}
+\item
+modulace: CSS - Cvrlikavé rozprostřené spektrum
+\item
+maximální velikost zprávy: 256 Bajtů
+\item
+počet zpráv za den: neomezený
+\item
+citlivost: -140dBm
+\item
+dosah v terénu: až 40km v terénu, 15 km v příměstském prostředí a 2 – 5 km ve městě
+\item
+zabezpečení: šifrování AES128
+\item
+výdrž na bateriích: 5-15 let (podle hustoty komunikace) \cite{iotportalLora}
+\end{itemize}
+\subsection{Pokrytí}
+Vzhledem k tomu, že LoRa aliance je otevřená a sestává se ze stovek členů zahrnujících mezinárodní telekomunikační operátory i výrobce techniky a senzorů a její účel je vytvořit mezinárodní síť s možností roamingu zařízení, je pokrytí téměř celosvětové. Sama aliance na svých stránkách publikuje tuto mapu \ref{worldLora}. V Česku spravuje komerční LoRaWAN síť operátor České Radiokomunikace a pokrývá většinu území, viz \ref{ceskoLora}
+\begin{figure}
+\caption{Pokrytí technologií LoRaWAN ve světě \cite{loraalliance}}
+\includegraphics[width=1\textwidth]{./images/worldLora.png}
+\label{worldLora}
+\end{figure}
+\begin{figure}
+\caption{Pokrytí LoRaWAN Českými radiokomunikacecmi \cite{cralora}}
+\includegraphics[width=1\textwidth]{./images/ceskoLora.png}
+\label{fig:loraSpec}
+\end{figure}
+\subsection{Fyzická vrstva (LoRa PHY)}
+Následující část se zabývá protokolem LoRa. Vzhledem k tomu, že je protokol LoRa propritární a neexistuje k němu tak veřejně dostupná dokumentace, vycházím zejména ze dvou prací \cite{gr-lora2016} \cite{gr-lora2018}. Tyto práce napsali výzkumníci, kteří pomocí reverzního inženýrství protokol analyzovali. Kromě reverzního inženýrství disponovali také zdroji ze stránek vlastníka technologie Semtech, které již v tuto chvíli nejsou k dispozici.
+\subsubsection{Modulace}
+Modulační schéma LoRa je založeno na Chirp Spread Spread Spectrum (Cvrlikající rozprostřené spektrum) modulaci  \cite{iotnetwroks2015} a definuje jeden “cvrk” jako jeden symbol. Cvrk lze popsat jako signál, který v průběhu svého trvání lineárně mění svoji frekvenci a to buď na nižší nebo na vyšší a rozlyšujeme tak cvrk nahoru adolů.\\ 
+Část spektra kterou cvrk zabýrá je jeho šířka pásma, v Evropě to může být 125 kHz nebo 250 kHz. To kolik kolik daný symbol/cvrk nese dat určuje činitel rozprostření, ten nabývá hodnot 7-12 bitů. Rychlost jakou se frekvence cvrku mění (první derivace frekvence) je dáná vztahem $k = \frac{BW}{2^SF}$ kde $k$ je rychlost cvrku, $BW$ je šířka pásma a $SF$ činitel rozprostření.\\
+\begin{figure}
+\caption{Ukázka signálu lora  \cite{gr-lora2016} (upraveno)}
+\includegraphics[width=\textwidth/3]{./images/cvrk.png}
+\label{fig:lora1}
+\end{figure}
+Celkový počet možných symbolů je dán vztahem $2^SF$ a konkrétní hodnota na na cvrk modulována pomocí časového posuvu cvrku. To znamená, že cvrk začíná na jiné frekvenci a ve chvíli kdy dojde na konec šířky svého pásma začíná a okamžitě znovu druhé hranice pásma. Hodnota tohoto posuvu tak určuje hodnotu symbolu a ten je tak vpodstatě kvantován na $2^SF$ časových intervalů, těmto intervalů říkáme čipy.
 
-\subsection{Prokládání}
+\subsubsection{Prokládání}
 Jako v každé jiné modulaci, musíme i zde počítat s chybami způsobenými šumem, interferencí, a časovými nebo frekvenčními posuny. Tyto chyby mohou způsobit, že hodnota čipu nebude dobře odečtena z modulovaného symbolu. Například poryv šumu může posunout vrchol v FFT spektru na jinou hodnotu chipu a tak jej znehodnotit.\\
-Aby bylo možné minimalizovat dopad poryvů šumu na chybu jen jednoho bitu v symbolu je použito prokládání. Několik chipů je dohromady vepsáno do mřížky $\{0,1\}^{SF x (4 + CR)}$, kde CR (Coding Rate) značí počet paritních bitů a nabývá hodnot 1 až 4. Pokud tedy bude použit $SF = 7$ a $CR =4$ dostaneme matici  $\{0,1\}^{7 x 8}$, příklad je na obrázku \ref{fig:lora1}. K sískání kódové slova je pak potřeba číst bity po diagonále matice. Na rozdíl od patentu LoRy (Seller and Sornin, 2014), kde se uvádí, že směr diagonálního čtení bitů z mřížky je směrem dolů, v praxi lze pozorovat opačný směr. Tímto způsobem tak první chip obsahuje všechny nejméně významné bity (LSB - Least significant) všech kódových slov, druhý čip všechny druhé bity všech slov a tak dále. Díky tomu v případě ztráty celého čipu dojde k chybě jen v jednom bitu na kódové slovo.\\
-Dalším způsobem jak zvýšit odolnost proti rušení vysílání je použití módu redukované rychlosti (reduced rate mode). V případě použití tohoto módu jsou první dvě řady prokládací matice zahozeny a její rozměr se tak změní na $\{0,1\}^{SF-2 x (4 + CR)}$ což způsobí, že z ní nasledně vyčteme o dvě kódová slova méně. Zahozené řádky obsahují nejméně významné bity chipů, které jsou nachylnější k chybám protože odpovídají užším frekvenčním intervalům v FFT spektru. Z toho vyplývá, že mód redukované rychlosti obětuje rychlost přenosu dat ve prospěch odolnosti proti šumu. Hlavička fyzické vrstvy LoRa je v tomto módu vysílána vždy, kdežtkoo užitečná data je v případě použítí SF 11 nebo 12.
+Aby bylo možné minimalizovat dopad poryvů šumu na chybu jen jednoho bitu v symbolu je použito prokládání. Několik chipů je dohromady vepsáno do mřížky $\{0,1\}^{SF X (4 + CR)}$, kde CR (Coding Rate) značí počet paritních bitů a nabývá hodnot 1 až 4. Pokud tedy bude použit $SF = 7$ a $CR =4$ dostaneme matici  $\{0,1\}^{7 X 8}$, příklad je na obrázku \ref{fig:lora1}. K získání kódového slova je pak potřeba číst bity po diagonále matice. Na rozdíl od patentu LoRy, kde se uvádí, že směr diagonálního čtení bitů z mřížky je směrem dolů, v praxi lze pozorovat opačný směr. Tímto způsobem tak první chip obsahuje všechny nejméně významné bity (LSB - Least significant) všech kódových slov, druhý čip všechny druhé bity všech slov a tak dále. Díky tomu v případě ztráty celého čipu dojde k chybě jen v jednom bitu na kódové slovo.\\
+\begin{figure}
+\caption{Diagonální prokládání při $FS=7$ a $CR =4$, hodnota čipu třetího symbolu je vyznačena tučně.   \cite{gr-lora2018}}
+\includegraphics[width=0.9\textwidth]{./images/prokladani.png}
+\label{fig:lora1}
+\end{figure}
+Dalším způsobem jak zvýšit odolnost proti rušení vysílání je použití módu redukované rychlosti (reduced rate mode). V případě použití tohoto módu jsou první dvě řady prokládací matice zahozeny a její rozměr se tak změní na $\{0,1\}^{SF-2 X (4 + CR)}$ což způsobí, že z ní nasledně vyčteme o dvě kódová slova méně. Zahozené řádky obsahují nejméně významné bity chipů, které jsou nachylnější k chybám protože odpovídají užším frekvenčním intervalům v FFT spektru. Z toho vyplývá, že mód redukované rychlosti obětuje rychlost přenosu dat ve prospěch odolnosti proti šumu. Hlavička fyzické vrstvy LoRa je v tomto módu vysílána vždy, kdežto užitečná data je v případě použítí SF 11 nebo 12.
 
-\subsection{Kódování}
+\subsubsection{Kódování}
 Po přečtení kódových slov z prokládací matice mají tato délku $4 + CR$. Kvůli zamezení vzniku stejnosměrné složky byla slova v části rámce s užitečnými daty XOR-ována 9-bitovým lineární posuvným registrem se zpětnou vazbou (LSFR Linear feedback shift register) (whitening). A proto musí po synchronizaci projít stejným procesem znovu. Přesný algoritmus není v patentu určen a jeho výběr je tedy na každém výrobci zvlášť. \\
-Na několika testovacích zařízeních \ref{nejdulzittejsipapir} reverzním inženýrstvým zjistilo použité upraveného $4/(4 + CR)$ Hammingova kódu. Ve výsledku tak z každého kódového slova po dekódování získáme 4 bity dat. Ta jsou pak naparsována du struktury rámce lora.
+Na několika testovacích zařízeních \cite{gr-lora2018} reverzním inženýrstvým zjistilo použití upraveného $4/(4 + CR)$ Hammingova kódu. Ve výsledku tak z každého kódového slova po dekódování získáme 4 bity dat. Ty jsou pak naparsovány do struktury rámce lora.
 
-\subsection{Struktura rámce}
-Na fyzické vrstě LoRa definuje rámec jako strukturu složenou z následujících polí. Pole jsou uvedena ve stejném pořadí jako v rámci.  (Semtech, 2015b, p. 27–29)
+\subsubsection{Struktura rámce}
+Na fyzické vrstě LoRa definuje rámec jako strukturu složenou z následujících polí. Pole jsou uvedena ve stejném pořadí jako v rámci.
 \begin{description}
 \item[Preambule]
 Sekvence základních cvrků, která slouží k časové a frekvenční synchronizaci. Počet cvrků není pevně dán.
@@ -193,19 +306,19 @@ Dva modulované cvrky co mouhou být použity pro identifikaci sítě. Hardwarov
 \item[Symboly synchronizace frekvence]
 Dva sdružené cvrky následované sdruženým cvrkem s periodoou $\frac{T}{4}$ určené pro přesnou frekvenční synchronizaci.
 \item[Hlavička (nepoviná)]
-Hlavička obsahuje délku užitečných dat, použitou přenosovou rychlost, indikuje použití Cyklického redundantního součtu (CRC - Cyclic redunduncy check) a jendobajtovou kontrolní sumu hlavičky. Pro modulaci hlavičky je vždy použito $CR =4$ a mód redukované rychlosti. Pokud hlavička vysílána není (implicitní mód) musí mít jak přijímač tak vysílač předem schodně nastavený CR a také zdali je použito CRC.
+Hlavička obsahuje délku užitečných dat, použitou přenosovou rychlost, indikuje použití cyklického redundantního součtu (CRC - Cyclic redunduncy check) a jendobajtovou kontrolní sumu hlavičky. Pro modulaci hlavičky je vždy použito $CR =4$ a mód redukované rychlosti. Pokud hlavička vysílána není (implicitní mód) musí mít jak přijímač tak vysílač předem stejně nastavené CR a také zdali je použito CRC.
 \item[Užitečná data]
 Pole o proměnné délce obsahující data vrstvy přístupu k médiu (MAC - Media access control) a případné dvoubajtové CRC těchto dat.
 \end{description}
-\subsection{Struktura hlavičky}
+\subsubsection{Struktura hlavičky}
 Délka hlavičky není ve specifikaci nikdy přímo určena. Lze jí však vydedukovat z toho, že hlavička je vždy vysílána v módu redukované rychlosti, má $CR =4$ a SF minimálně 7. Z toho vyplívá že hlavička se musí vejít do mřížky $\{0,1\}^{7-2 x 8)}$ a to odpovídá 5 kódovým slovům. Každé slovo má 8 bitů a dohromady je to bitů 40. Jakékoliv zbývající bity jsou použity pro užitečná data. \\
-Po dekódování díky redundantním bitům dostáváme $40\frac{4}{8} = 20$ bitů nebo 2,5 bajtu. V \ref{nejdulezitejsipapir} experimentálně vyzkoušeli pořadí hlavičky. První bajt udává délku datového obsahu, následuje půlslabika  udávající CR a přítomnost MAC CRC a poslední bajt obsahuje kontrolní součet hlavičky, z něj je však používá jen 5 LSB bitů.
+Po dekódování díky redundantním bitům dostáváme $40\frac{4}{8} = 20$ bitů nebo 2,5 bajtu. V \cite{gr-lora2018} experimentálně vyzkoušeli pořadí hlavičky. První bajt udává délku datového obsahu, následuje půlslabika  udávající CR a přítomnost MAC CRC a poslední bajt obsahuje kontrolní součet hlavičky, z něj je však používá jen 5 LSB bitů.
 
-\section{Softwarová demodulace}
-\ref{nejdulezitejsipapir} dokázali implementovat kompletní PHY vrstvu LoRa ve frameworku GNU Radio. Jejich zdrojové kódy jsou open source a dostupné na Githubu. Funkčnost příjmu signálu LoRa mého scanneru vychází z jejich práce. V této kapitole je pospsán princip fungování.
-\subsection{Detekce a synchronizace}
+\subsection{Softwarová demodulace} \label{sec:softdem}
+\cite{gr-lora2018} dokázali implementovat kompletní PHY vrstvu LoRa ve frameworku GNU Radio. Jejich zdrojové kódy jsou open source a dostupné na Githubu. Funkčnost příjmu signálu LoRa mého scanneru vychází z jejich práce. V této kapitole je pospsán princip fungování.
+\subsubsection{Detekce a synchronizace}
 \label{subsec:detection}
-Aby mohl být signál demodulován musí být nejdříve detekován. K tomu slouží preamule která má dva opakující se cvrky čehož dokáže využít použitý Schmidl-Cox algoritmus. Ten definuje dvě veličiny $P(d)$ a $R(d)$, ty jsou definované takto (Schmidl a Cox, 1997) \ref{SchmidlCox}:
+Aby mohl být signál demodulován musí být nejdříve detekován. K tomu slouží preamule která má dva opakující se cvrky čehož dokáže využít použitý Schmidl-Cox algoritmus. Ten definuje dvě veličiny $P(d)$ a $R(d)$, ty jsou definované takto \cite{schmidlcox1997}:
 \begin{align}P(d) = \sum_{m=0}^{L-1} (x_{t+m}^{\ast}x_{t+m+L})
 \label{eq:lora3}
 \end{align}
@@ -218,45 +331,92 @@ kde $L$ je délka symbolu, $t$ je index vzorku komplexnímo signálu $x$ a $x^{\
 M(d) = \frac{\vert P(d) \rvert ^{2}}{R(d)^{2}}
 \label{eq:lora5}
 \end{align}
-Časová metrika $M(d)$ v podstatě počítá normalizovanou autokorelaci délky $L$ přes dva symboly, maximum bude mít ve cvhíli kdy v signálu budou za sebou dva totožné symboly. Díky tomu, že oba symboly jsou chybami způsobenými prřenosem (interference, frekvenční odchylka nosné (CFO - Carrier frequency ofset), odchylka vzorkovací frekvence) ovlivněny stejně, tak tyto chyby téměř neovlivní výsledek korelace. Aby bylo možné efektivně počítat rovnice \ref{lora4} a \ref{lora5} v programu byla použita knihovna VOLK (Vector Optimized Library of Kernels), která implementuje SIMD (Single Instruction, Multiple Data) instrukce. Na obrázku \ref{fig6a} je vidět příklad výsledku použití časové metriky $M(d)$ na komplexním signálu LoRa. Kolem vzorku 2500 funkce dosahuje horní plošilny a poukazuje tak na existenci preambule. \\
-I přesto že tento algorimus detekuje preambuli velmi dobře, není možné přesně určit počátek symbolu jen z horní plošiny časové metriky. Tým kolem Wanga \ref{wang et al} proto navrhl vylepšení kdy je od časové metriky $M(d)$ odečtena její opožděná verze $M_{2}(d)$, tím se z plošiny stává vrchol \ref{fig6b} a lze tak za začátek symbolu považovat vzorky odpovídající maximu této metriky. Nicméně ani to není jak je patrné z \ref{fig6c} dostatečně přesné pro signály LoRa.\\
-Aby \ref{nejdulezitejsipapir} tenhle problém vyřešili museli vymyslet nové řešení. To se zakládá použití Schmidl-Coxovi metriky pro přibližné určení okna ve kterém se nachází druhý symbol preambule a následném zpřesnění pomocí ideálního lokálně vygenerovaného cvrku. Jeho okamžitá frekvence $\omega_{l}(t)$ a normovaná okamžitá frekvence signálu Lora  $\omega(t)$ jsou vzájemně korelovány (přes posuvné okno?) a index vzorku jež odpovídá maximální hodnotě této funkce je považován za počátek symbolu. Použití omažité frekvence místo komplexních hodnot je odůvodněno chybami CFO, které by bez korekce mohly ovlivnit přesnost synchronizace. Použitím okamžité frekvence jsou podobně jako u Schmidl-Coxova algoritmu tyto chyby zanedbatelné.
-\begin{align}
-symbol start = \argmax_{i \in \{0,1,...L\}} (\omega_{l} \star \omega)(i)
-\label{eq:lora6}
-\end{align}
-Výsledek je na \ref{fig6d}. Poslední součástí tohoto řešení je určení prahové hodnoty maxima korelačního koeficientu okamžitých frekvencí lokálnlně gerovaného cvrku a přijátého. Pokud je tato hodnota menší než prahová je daný rámec zahozen, protože se buďto jedná o falešně pozitivní detekci rámce nebo o nepovedenou synchronizaci.
-\subsection{Demodulace}
+Časová metrika $M(d)$ v podstatě počítá normalizovanou autokorelaci délky $L$ přes dva symboly, maximum bude mít ve cvhíli kdy v signálu budou za sebou dva totožné symboly. Díky tomu, že oba symboly jsou chybami způsobenými prřenosem (interference, frekvenční odchylka nosné (CFO - Carrier frequency ofset), odchylka vzorkovací frekvence) ovlivněny stejně, tak tyto chyby téměř neovlivní výsledek korelace. \\
+\begin{figure}
+\caption{Vlevo synchronizace pomocí Schmidl-Cox algoritmu a vpravo algoritmus použitý v \cite{gr-lora2018}}
+\includegraphics[width=0.9\textwidth]{./images/synchro.png}
+\label{fig:loraSyn}
+\end{figure}
+I přesto že tento algorimus detekuje preambuli velmi dobře, nicméně ani to není vzhledem k plošině maxima dostatečně přesné pro signály LoRa. Aby \ref{gr-lora2018} tenhle problém vyřešili museli vymyslet nové řešení. To se zakládá použití Schmidl-Coxovi metriky pro přibližné určení okna ve kterém se nachází druhý symbol preambule a následném zpřesnění pomocí ideálního lokálně vygenerovaného cvrku. Jeho okamžitá frekvence $\omega_{l}(t)$ a normovaná okamžitá frekvence signálu Lora  $\omega(t)$ jsou vzájemně korelovány a index vzorku jež odpovídá maximální hodnotě této funkce je považován za počátek symbolu. Použití omažité frekvence místo komplexních hodnot je odůvodněno chybami CFO, které by bez korekce mohly ovlivnit přesnost synchronizace.
+
+Výsledek je na obrázku \ref{fig:loraSyn}. Poslední součástí tohoto řešení je určení prahové hodnoty maxima korelačního koeficientu okamžitých frekvencí lokálnlně gerovaného cvrku a přijátého. Pokud je tato hodnota menší než prahová je daný rámec zahozen, protože se buďto jedná o falešně pozitivní detekci rámce nebo o nepovedenou synchronizaci.
+\subsubsection{Demodulace}
 \label{subsec:demodulace}
-Po úspěšné synchronizaci následuje fáze demodulace popsaná v předchozí kapitole. Oproti teorii má však v praxi FFT demodulace nevýhodu v tom, že je citlivá na odchylku frekvence, která způsobuje posun hodnot FFT a tím i odečítaných hodnot chipů. Tím pádem je potřeba přesná synchronizace frekvence, kterou je navíc potřeba aplikovat na každý kanál LoRa zvlášť. Separace kanálů a následná synchronizace každého z nich je však v softawaru příliš náročná operace a tak \ref{nejdulezitejsipapir} přišli s novou metodou demodulace, která je nezávislá na frekvenci a umožňuje demodulaci na všech kanálech současně v reálném čase. V porovnání s FFT metodou je však méně robustní.\\
+Po úspěšné synchronizaci následuje fáze demodulace. Při příjmu modulovaného cvrku s neznámým časovým posuvem $x(t + \hat{t})$, může být hodnota cvrku zrekonstruována navzorkováním signálu vzorkovací frekvencí chipů a výpočtem:
+\begin{align}i= Gray(arg \max (\lvert FFT(x(t+ \hat{t}) \odot \overline{x(t)}) \rvert ))
+\label{eq:lora2}
+\end{align}
+Kde $\overline{x(t)}$ značí komplexně sdružený základní cvrk, $\odot$ značí multiplikaci po prvcích, $\lvert FFT(x) \rvert$ zančí velikost Rychlé Fourierovi transformace $x$, a $Gray$ je Grayovo kódování. \\
+Oproti teorii má však v praxi FFT demodulace nevýhodu v tom, že je citlivá na odchylku frekvence, která způsobuje posun hodnot FFT a tím i odečítaných hodnot chipů. Tím pádem je potřeba přesná synchronizace frekvence, kterou je navíc potřeba aplikovat na každý kanál LoRa zvlášť. Separace kanálů a následná synchronizace každého z nich je však v softawaru příliš náročná operace a tak \cite{gr-lora2018} přišli s novou metodou demodulace, která je nezávislá na frekvenci a umožňuje demodulaci na všech kanálech současně v reálném čase. V porovnání s FFT metodou je však méně robustní.\\
 Nejdříve je potřeba spočítat okamžitou úhlovou fekvenci $\omega[t]=\frac{d\varphi[t]}{dt}$. Poté je potřeba $\omega[t]$ vyhladit a decimovat konstantním decimačním faktorem $\frac{s_fT}{2^{SF}}$ kde $s_f$ je vzorkovací frekvence. Díky tomu je pak počet vzorků v $\omega[t]$ schodný s $2^{SF}$ následně je vypočítán digitální gradient $f$:
 \begin{align}
 D_t[\omega[t]] = \omega[t+1]-\omega[t]
 \label{eq:lora7}
 \end{align}
-Tuto operaci si lze představit jako filtr horní propusť okamžité frekvence nebo jako druhou derivaci fáze. Protože frekvence základního cvrku se lineárně zvyšuje s $k$ - $\omega(t) = kt + f_0$ je její derivace $\omega'(t)$ rovna $k$. Pro modulované cvrky se však v $D_t$ objeví ostré šličky v místech přechodu mezi vysokou a nízkou frekvencí. Přítomnost takových špiček indikuje časový posun $\hat{t}$, nepřítomnost naopak idikuje časový posun 0 - základní cvrk.\\
+Tuto operaci si lze představit jako filtr horní propusť okamžité frekvence nebo jako druhou derivaci fáze. Protože frekvence základního cvrku se lineárně zvyšuje s $k$ - $\omega(t) = kt + f_0$ je její derivace $\omega'(t)$ rovna $k$. Pro modulované cvrky se však v $D_t$ objeví ostré špičky v místech přechodu mezi vysokou a nízkou frekvencí. Přítomnost takových špiček indikuje časový posun $\hat{t}$, nepřítomnost naopak idikuje časový posun 0 - základní cvrk.\\
 
 Dalším problémem při demodulaci je zpožďování/předbíhání hodin v jednotlivých zařízeních. Kristalové oscilátory v LoRa vysílači a SDR se budou zákonitě navzájem předbíhat nebo zpožďovat, rozdíl jejich frekvencí je předem neznámý, ale v průbhu času se musí projevit. To může způsobovat problémy zejména v případě delšího datového obsahu v kombinaci s vyšším SF. V patentu LoRa jsou pro účely korekce tohoto jevu použity pilotní symboly, které pomohou sledovat časování. Ve skutečnosti se však zdá, že k jejich použití nebylo přistoupeno. Je tedy nutné využít techniku slepého odhadu, která využívá převzorkování přijatého signálu $N$-krát. Aby tato technika byla funkční je potřeba aby hodnota $N$ odpovídala následujícímu vztahu $\lvert\Delta t \rvert < \frac{N}{2}$\\, kde $\Delta t$ je chyba časování na symbol.
-Prvním krokem je synchronizace popsaná v \ref{ subsec:detection}. Pokud je chyba časování na symbol  $\lvert\Delta t \rvert < \frac{N}{2}$\\, lze $\lvert\Delta t \rvert$ určit následujícím způsobem:
+Prvním krokem je synchronizace popsaná v \ref{subsec:detection}. Pokud je chyba časování na symbol  $\lvert\Delta t \rvert < \frac{N}{2}$\\, lze $\lvert\Delta t \rvert$ určit následujícím způsobem:
 \begin{enumerate}
 \item
 Symbol je demodulován běžným způsobem jak je popsáno v \ref{subsec:demodulace} a je tak získána hodnoto chipu $i$  a časového posunu $\hat{t}$.
 \item
-Na přijímači je lokálně generovaný základni cvrk modulován na i což způsobí časový posun $\hat{t}_1$ lokálního signálu.
+Na přijímači je lokálně vygenerován základni cvrk modulován na i což způsobí časový posun $\hat{t}_1$ lokálního signálu.
 \item
 Protože lokálně generovaný cvrk není ovlivněn rozdílem oscilátorů vysílače a přijímače můžeme vzájemné zpoždění oscilátorů definvat takto $\Delta t = \hat{t}_1 - \hat{t}$. Nyní stačí na příjimači opravit $\hat{t}$ připočtením vzájemného zpoždění k přijatému signálu.
 \end{enumerate}
 Již zmíněná podmínka $\lvert\Delta t \rvert < \frac{N}{2}$ je daná tím, že při jejím nesplnění dekodér špatně určí hodnotu chipu $i$ a chyba se tak bude šířit i do dalších symbolů. Hodnota $N$ tak není určena přímo ale jako interpolace z $\hat{t}$ do $\hat{t} + \Delta t$. Vyšší hodnoty $N$ by dále vylepšovali přesnost korekcí zpoždění ale také by zvyšovali náročnost výpočtu.
 
-\subsection{Dekódování}
-Ve fázi dekódování jsou hodnoty chipů zpětně proloženy a tím jsou získána kódová slova s 4 + CR bity. Prvních 8 kódových slov lze přímo dekódovat jako hlavičku fyzické vrstvy. Datový obsah však musí být nejprve XORován bělící posloupností. I přesto že dle výrobce LoRa Semtech má jít o sekvenci generovanou 9-bitovým LFSR ve skutečnosti je dle výzkumu \ref{Knight 2016, Blum 2017} použita posloupnost mírně odlišná, která však není veřejně zdokumentovaná.\\
+\subsubsection{Dekódování}
+Ve fázi dekódování jsou hodnoty chipů zpětně proloženy a tím jsou získána kódová slova s 4 + CR bity. Prvních 8 kódových slov lze přímo dekódovat jako hlavičku fyzické vrstvy. Datový obsah však musí být nejprve XORován bělící posloupností. I přesto že dle výrobce LoRa Semtech má jít o sekvenci generovanou 9-bitovým LFSR ve skutečnosti je dle výzkumu \cite{gr-lora2016} a \cite{limesdrlora} použita posloupnost mírně odlišná, která však není veřejně zdokumentovaná.\\
 Pokud však známe původní  kódové slovo i přijaté vybělené lze snadno zjistit sekvenci použitou pro XORování následovně
-$w^{(j)} = c_w^{(j)} \oplus c^{(j)}$. Pro zjednodušení lze vyslat všechna kódová slova nulová a tím dostaneme rovnici $w^{(j)} = c_w^{(j)} \oplus 0$ a na výstupu tak máme přío samotnou bělící sekvenci, kterou můžeme uložit a poté náčítat z tabulky. \\
-Po Odbělování příchází poslední krok a to Hammingovo dekódování kódových slov. U LoRa jsou datové bity umístěny na jiných pozicích než je běžné a to na indexech 0,1,2 a 3 bajtu místo indexů 1,2,3 a 5. Graficky je toto mapování zobrazeno na \ref{hamming}. Po extrakci datových bitů jsou pak pomocí paritních bitů detekovány a případně opraveny chyby a tím získána původní data.
+$w^{(j)} = c_w^{(j)} \oplus c^{(j)}$. Pro zjednodušení lze vyslat všechna kódová slova nulová a tím dostaneme rovnici $w^{(j)} = c_w^{(j)} \oplus 0$ a na výstupu tak máme přímo samotnou bělící sekvenci, kterou můžeme uložit a poté náčítat z tabulky. \\
+Po odbělování příchází poslední krok a to Hammingovo dekódování kódových slov. U LoRa jsou datové bity umístěny na jiných pozicích než je běžné a to na indexech 0,1,2 a 3 bajtu místo indexů 1,2,3 a 5. Po extrakci datových bitů jsou pak pomocí paritních bitů detekovány a případně opraveny chyby a tím získána původní data.
 
 
-\chapter{SigFox}
-\section{Rádiový protokol Sigfox)}
+\section{SigFox}
+\subsection{Obecné informace}
+Sigfox je další LPWAN sítí. Původně tato technologie vznikla ve Francii odkud se rozšířila do zbytku světa. Stejně jako LoRaWAN používá hvězdicové architektury a má i podobné využití a cíle. Na rozdíl od LoRaWAN však nevyužívá rozprostřené spektrum, ale vysílání na velmi úzké šířce pásma.\\
+Stejné je i to, že nepoužívá synchronizovanou síť a šetří tak zdroje normálně na synchronizaci vynakládané a místo synchronizace je použit náhodný přístup k médium, kdy zařízení každou zprávu pošle třikrát v různých časech a na různých frekvencích. Na rozdíl od LoRaWAN však nemá třídy zařízení, a tak jediná možnost pro downlink je potom co zařízení ukončí uplink.\\
+Dalším omezením je povolený počet zpráv, který je pro koncová zařízení limitován na obsazení pásma 1 \% času což při dvanácti bytových zprávách odpovídá 144 zprávám denně \cite{sigfox2017}. Brány mohou obsazovat médium po 10 \% času. Při maximálním počtu zařízení to odpovídá 4 zprávám denně na každé zařízení. Tato omezení vyplývají z použité technologie a použití nekomerčních frekvencí na které není potřeba žádná licence.\\
+Architektura sítě je velmi podobná LoRaWAN. Koncová zařízení komunikují přes Sigfox s bránami, které jsou připojeny přes veřejný internet k serverům Sigfox, které zajišťují správu stanic, spektra a celkového fungování sítě, zpracování zpráv, ukládání dat a také slouží k přístupu do sítě skrz webový portál nebo API. Servery Sigfox také zajišťují účtování a případnou analýzu dat.\\
+Bezpečnost je zajištěna na několika vrstvách. Za prvé zařízení v síti nejsou přímo dostupná z internetu, což slouží podobně jako firewall. Za druhé je systém odolný proti replay útokům, díky použití unikátního ID pro každou zprávu. Každé zařízení má také unikátní symetrický autentizační klíč, pomocí kterého je generován Message Authentication Code (MAC), který zajišťuje autenticitu a integritu každé zprávy. V případně nutnosti zašifrovat samotné zprávy je možné použít vlastní šifrování na aplikační úrovni nebo využít zabudovaný systém na bázi AES \cite{sigsec}. Od brány dál směrem k serverům a uživateli je použito standartní zabezpečení používané na internetu.
+\subsection{Specifikace}
+\begin{itemize}
+\item technologie: UNB (Ultra Narrow Band)
+\item modulace: DBPSK
+\item způsob příjmu: bez synchronizace, MIMO
+\item velikost zprávy: 0-12 Bytů (96 bitů)
+\item rychlost přenosu: 100 bitů/s
+\item doba přenosu a zpracování: 4-6 s
+\item frekvence: 868MHz (ETSI), 915 MHz (FCC)
+\item počet zpráv za den: 144
+\item maximální počet zpráv na BTS denně: 9 000 000
+\item vysílací výkon: 25mW / 14 dBm
+\item budget link: 162 dB
+\item zpětný kanál: 4 zprávy po 8 Bytech denně
+\item dosah v terénu: až 50 km v terénu, 3 km ve městě pro indoor
+\item spotřeba: 5 mA – 45 mA při vysílání, 0 mA v klidu 
+\item výdrž na bateriích: 5-15 let (až 20 let na dvě AA baterie)
+\item zabezpečení: hash, šifrování možné na aplikační úrovni
+\item SLA: 99 \% \cite{iotportalSigfox}
+\end{itemize}
+\subsection{Pokrytí)}
+V rámci celosvětového měřítka je SigFox rozvinut zejména v Evropě, kde je nejsouvislejší pokrytí. Dále se je síť ve výstavbě ve většině zemí Ameriky a v Austrálii.
+Na mapě jsou fialově vyznačeny země, kde probíhá budování sítě a modrou aktuální pokrytí.
+V České republice provozuje síť SigFox operátor SimpleCell ve spolupráci s operátorem T-mobile CZ. S výstavbou sítě začali již v létě 2015 v rámci testovacího provozu. Aktuálně pokrývají 96 \% obyvatelstva a 94 \% území a v plánu mají pokrýt 98 \% obyvatelstva a 96 \% území ČR \cite{simplecell}. V mapě jsou červenou barvou označena místa, která pokrývají tři a více bran, což je ideální stav.  Zelenou barvou jsou označena místa pokryta dvěma branami a modrou ta jen jednou.
+\begin{figure}
+\caption{Pokrytí Sigfox ve světe\cite{wolrdsigfox}}
+\includegraphics[width=1\textwidth]{./images/worldSig.png}
+\label{dbpsk}
+\end{figure}
+\begin{figure}
+\caption{Pokrytí Sigfox v České republice \cite{iotportal}}
+\includegraphics[width=1\textwidth]{./images/ceskoSig.jpg}
+\label{dbpsk}
+\end{figure}
+
+\subsection{Rádiový protokol Sigfox)}
 
 Základním poznávacím znamením technologie Sigfox je pužití velmi úzkého pásma (UNB - Ultra Narrow Band). To dovoluje vysílání na větší vzdálenosti díky úzkému zaměření vysílacího výkonu každého zařízení. Navíc díky použití UNB může na jednom místě operovat velké množství zařízení bez přílišného vzájemného rušení. \\
 Sigfox používá různá modulační schémata pro uplink a downlink, důvodem je optimalizace využití spektra. Různá je i šířka pásma, přenosová rychlost, vysílací výkon i struktura rámce. Popíšu tedy oba směry zvlášť a zaměřím se přitom na parametry používané v Evropské unii. V jiných regionech se parametry lyší, důvodem jsou různé alokace spektra.
@@ -274,13 +434,13 @@ Střída             & 1 \%              & 10 \%
 \end{tabular}
 \caption{Parametry přenosu Sigfox pro Uplink a Downlink}
 \label{tab:upAndDown}
-\cite{https://www.ietf.org/proceedings/96/slides/slides-96-lpwan-10.pdf}
+\cite{sigfoxsystem}
 \end{table}
 
-\subsection{Fyzická vrstva uplinku}
+\subsubsection{Fyzická vrstva uplinku}
 Sigfox pro Uplink používá modulaci typu DBPSK (Differential Binary Phase Shift-Keying). Tato modulace stejně jako standartní BPSK používá fázi pro určení symbolu, narozdíl od ní však nejen zaznamená přechod z 0 do 1, ale i bez referenční fáze rozlyší zda je daný symbol 0 nebo 1. Toto je možné díky tomu, že symbol neurčuje konkrétní fáze, ale její změna, odtud také plyne její pojmenování. \\
 \begin{figure}
-\caption{Příklad modulace DBPSK \ref{http://www.cryptofreak.org/projects/mod-chal/dbpsk.php}}
+\caption{Příklad modulace DBPSK \cite{dbpsk}}
 \includegraphics[width=1\textwidth]{./images/dbpsk.jpg}
 \label{dbpsk}
 \end{figure}
@@ -288,20 +448,20 @@ Na obrázku \ref{dbpsk} je znázorněn příklad fungování této modulace. Pok
 Verze DBPSK Sigofxem používaná pro každý symbol sadu period signálu a hodnotu symbolu určí podle toho zda se průběhu vysílání této sady změní fáze (0) či nikoliv (1). Demodulace tak není tolik ovlivněna lokální proměností fáze.\\
 V případě evropské verze je přenosová rychlst uplinku 100 bit/s a frekvence signálu 868,1 Mhz. Z toho vyplívá že každý bit/symbol odpovídá 8 681 000 periodám. Velké množství period využívá příjimač pro statistické určení posunu fáze každého bitu. V případě 1 bude celá sada mít fázi stejnou a v případě 0 se fáze v prostřed posune. \\
 \begin{figure}
-\caption{Modulace amplitudy při změně fáze \ref{https://www.disk91.com/2017/technology/sigfox/the-sigfox-radio-protocol/}}
+\caption{Modulace amplitudy při změně fáze \cite{sigfoxprotocol}}
 \includegraphics[width=1\textwidth]{./images/dbpsk_sigfox.jpg}
 \label{dbpsk_sigfox}
 \end{figure}
 Pokud by se však fáze posunula při plné amplitudě znamenalo by to velký negativní dopad na spektrální efektivitu. Aby se tento efekt zmenšil je také okolo posunu fáze modulována amplituda. Grafické znázornění této modulace je na obrázku \ref{dbpsk_sigfox}.\\
 
-\subsection{Struktura rámce uplinku}
+\subsubsection{Struktura rámce uplinku}
 Na fyzické vrstě Sigfox definuje rámec jako strukturu složenou z následujících polí. Pole jsou uvedena ve stejném pořadí jako v rámci. V prvním opakování není použito žádné specifické kódování a data tak jsou přímo čitelná. V druhém a třetím opakování jsou však pole F.TYPE, SEQ.ID, DEVICE.ID a PAYLOAD zakódovány.\\
 Při druhém opakování hodnota každého bitu závisí na dvou předchozích, pokud jsou stejné tak je hodnota aktualního bitu prohozena. Při třetím opakování závisí hodnota aktuálních dvou bitů vždy na hodnotě dvou předchozích !!!!!!!! uplne nevim jak !!!! možná jen tak, že pokud je objeden dozadu nula tak prohazuji hodnotu.\\
 Následkem použití jiného kódování pro každé opakování, není i přes identický obsah nikdy vysílán stejný rámec třikrát. Změny fáze jsou vždy na jiných místech, to může pomoci při přijmu zejména v podmínkách kdy se signál ztrácí v šumu.\\
 Speciálním typem rámce uplinku je rámec OOB (Out of Band) který slouží jako potvrzení příjmu rámce downlinku. Lyší se v několika ohledech, jednak není opakován a druhak nepřenáší uživatelsky užitečná data. Místo nich v PAYLOAD poli, které je vždy dlouhé 8 bajtů, zasílá informace o napětí během nečinosti i během vysílání, teplotu, RX RSSI.
 
 \begin{figure}
-\caption{Struktura rámce Sigfox pro Uplink (nahoře) a konkrétní podoba rámce OOB (dole). Každá buňka reprezentuje půslabiku (4 bity)}
+\caption{Struktura rámce Sigfox pro Uplink (nahoře) a konkrétní podoba rámce OOB (dole). Každá buňka reprezentuje půslabiku (4 bity) \cite{sigfoxprotocol}}
 \includegraphics[width=1\textwidth]{./images/SigfoxFrameRx.png}
 \includegraphics[width=1\textwidth]{./images/SigfoxFrameOobRx.png}
 \label{sigfoxRxRamce}
@@ -323,12 +483,12 @@ Délka zprávy & 1. opakování & 2. opakování & 3. opakování \\ \midrule
 1 bit        & 0x06B        & 0x6E0        & 0x034        \\
 RX OOB       & 0xF67        & -            & -            \\ \bottomrule
 \end{tabular}
-\caption{Hodnoty F.TYPE v závislosti na délce zprávy a pořadí opakování}
+\caption{Hodnoty F.TYPE v závislosti na délce zprávy a pořadí opakování \cite{sigfoxprotocol}}
 \label{tab:ftype}
 \end{table}
 
 \item[F.TYPE]
-Frame Type je část rámce, dle které lze rozeznat o kolikáté opakování (každý rámec se opakuje třikrát) vysílání se jedná a také délku užitečných dat. Přesné hodnoty nejsou nikde definovány, ale z pokusů o reverzní inženýrství \ref{https://www.disk91.com/2017/technology/sigfox/the-sigfox-radio-protocol/comment-page-1/#comment-398580} vyplývá tabulka \ref{tab:ftype}. (mohu/nemohu potvrdit) Zajímavé je, že opakování a délka dat nemají samostatné indikační bity, ale existují konstanty pro jejich kombinace.
+Frame Type je část rámce, dle které lze rozeznat o kolikáté opakování (každý rámec se opakuje třikrát) vysílání se jedná a také délku užitečných dat. Přesné hodnoty nejsou nikde definovány, ale z pokusů o reverzní inženýrství  \cite{sigfoxprotocol} vyplývá tabulka \ref{tab:ftype}. (mohu/nemohu potvrdit) Zajímavé je, že opakování a délka dat nemají samostatné indikační bity, ale existují konstanty pro jejich kombinace.
 \item[F.FLAGS]
 Tato půslabika je rozdělená do tří částí. První dva bity určují počet bajtů přidaných do rámce jako výplň pro dosažení jedné z předdefinovaných délek. To znamená, že pokud by délka zprávy vyšla na 6 bajtů, tak bude odeslána v osmi bajtovém rámci a dva bajty tak budou přidány a hodnota těchto bitů bude 10 neboli 2.\\
 Třetí bit značí zda je na tento rámec vyžadována odpověď ve formě downlinku. Pokud je tento bit 1 síť by měla v následujícím intervalu pro downlink odpovědět. Poslední bit je vždy 0.\\
@@ -345,7 +505,7 @@ HMAC (hash-based message authentication code) je druh MAC projejíž výpočet j
 Poslední pole je CRC s délkou 16 bitů.
 \end{description}
 
-\subsection{Downlink}
+\subsubsection{Downlink}
 Pro komunikaci směrem ze sítě do zařízení Sigfox používá modulační schéma GFSK, vyšší výkon, širší pásmo a navíc má i větší poměr vysílacího času, viz \ref{tab:upAndDown}. Mohlo by se zdát, že jsou Uplink a Downlink kanály nevyvážené ve prospěch Downlinku, ale opak je pravdou jelikož Downlink je vysílán pro všechna zařízení v dosahu a Uplink se počítá pro každé zařízení zvlášť. V Evropě po započtení všech omezení vychází pro každé zařízení 140 Uplink zpráv denně a jen 4 Downlink zprávy.\\
 Přesný obsah rámce ani další detaily momentálně neznám. Pouze lze něco málo vyčíst z tabulky \ref{tab:downlinkFrame}.
 \begin{table}[]
@@ -357,15 +517,133 @@ Preamble (91) & Frame Sync (13) & ECC (32) & Payload (0 - 64) & MAC (16) & FCS (
 \label{tab:downlinkFrame}
 \end{table}
 
+\part{Přehledový přjímač}
+\chapter{Hardware}
+V této kapitole shrnu veškerý potřebný hardware pro přehledový přijímač. Jedninou povinnou součástí určenou v zadání bylo SDR, ostatní komponenty však vyplynuly z potřebných vlastností přijímače, a tak nezbylo příliš prostoru pro invenci. Cíl bylo zhotovit přijímač tak aby byl mobilní, mohl funguvat na baterie a vyhověl zadání v tom smyslu, že kromě příjmu dat ze sítí IoT bude schopen je také předat po IP protokolech dál a sám přehledně zobrazit.
+\section{RTL-SDR}
+
+I přesto, že konkrétní druh SDR nebyl v zadání určen, byla jeho volba jen formální záležitostí. Jak už totiž vyplývá z kapitoly ref{chapter:sdr} RTL-SDR je de facto stardard pro amatérské využití. Mezi ostatnímy SDR se vyjímá předeším cenou, která je desetinnásobně až stonásobně menší. Jeho hlavní nevýhodou oproti dražším variantám je nemožnost vysílání, tato nevýhoda však vzhledem k určení není relevantní. Dalším potencionální nevýhodou by mohl být rozsah. Vzhledem k tomu, že jsem se však rozhodl soustředit pouze dva druhy Iot sítí - LoRa a Sigfox a obě pracují v bezlicenčním pásmu ISM 868Mhz, je i tato nevýhoda bezvýznamná. Ostatní nedostatky oproti dražší konkurenci jsou již tak malé, že by pro účely této práce nedávalo smysl volit jinak.\\
+V případě dalšího vývoje v budoucnosti je však možné, že bude potřeba SDR upgradovat. To může být motivováno technologií NB-Iot, kterou u nás provozuje operátor Vodafone. Tato technologie funguje na stejných pásmech jako LTE a tak se vzhledem k nemožnosti příjmu fekvencí nad 1766 Mhz může NB-IoT dostat mimo rozsah RTL-SDR. Upgrade by pak mohl proběhnout dvěma způsoby, buďto přidáním konvertoru, nebo výměnou samotného SDR. To už jsou však úvahy náležící pozdějším pracem. V obou případech se však díky využití GNU Radio bude jednat o jednoduchou výměnu, bez nutnosti větších zásahů do software přehledového přijímače.\\
+Specifikovat vybrané SDR pouze jako RTL-SDR však nestačí. Toto označení se používá pro nepřeberné množství USB DVB-T tunerů používajících čipset RTL2832U. Ty se mezi sebou mohou lišit ve několika ohledech. Prvním je použitý tuner. Nejžádanější variantou pro účely SDR je tuner E4000 od firmy Elonics, má totiž nejširší rozsah z používaných tunerů. \\cite{osmocom} Jeho nevýhodou však je dostupnost, tento tuner se již nevyrábí a tak jsou RTL-SDR s tím to tunerem ke koupi již jen ze zapomenutých zásob obchodů a nebo z druhé ruky. Jejich cena tak oproti ostatním variantám v poslední době stoupla i přesto, že ještě před několika lety se nijak nelišila. V poslední době je tak nejběžnějším tunerem R820T2, ten má sice rozsah o něco menší než E4000 (ale větší než ostatní tunery), nemá v něm však mezery a je tak i vzhledem k dostupnosti nejvhodnější variantou.\\
+Druhým zásadním parametrem, kterým se můžou RTL-SDR lišit je konektor antény. Vzhledem k tomu, že byly původně určeny pro sledování televize, mají často konektor PAL nebo MCX. \cite{rtlsdrcom} To v zásadě nepředstavuje problém, ale pro práci s rádiem se častěji používá konektor SMA a proto existuje také větší množství a výběr antén k tomuto konektoru.\\
+Posledním zásadním parametrem odlišujícím různá RTL-SDR je přitomnost teplotně kompenzovaného oscilátoru (TXCO). Ten je užitečný, protože při použití se RTL-SDR zahřívá a pokud není jeho oscilátor tepelně kompenzovám, tak se jeho frekvence mění. Zahřívání na plnou provozní teplotu trvá několik minut, během této doby zůstane nalazená frekvence u SDR-RTL s TXCO stabilní, kdežto u ustatních se bude posouvat.\\
+\\ Po zvážení těchto skutečností a také kvůli dalším úpravám mířeným na zlepšení použití jako SDR jsem zvolil RTL-SDR Blog V3. Tato varianta RTL-SDR byla speciálně upravena pro použití ne jako DVB-T tuner ale jako SDR. Kromě tuneru R820T2, konektoru antény SMA a TXCO má i další vylepšení. Nejdůležitějším vylepšením pro použití v přehledovém přijímači je použití hliníkového krytu, který funguje jako chladič pro interní komponenty a zároveň jako elektromagnetický štít. To spolu s lepším návrhem PCB také snižuje množství šumu. Další vylepšení nejsou pro účely této práce až tolik podstatná spíše přispívají k znovupoužitelnosti tohoto SDR v dalších projektech. Konkrétně se jedná o softwarově spínatelné bias tee (napájení např. nízkošumového zesilovače z RTL-SDR), režim přímého vzorkování (zpřístupňuje fekvence 500 kHz - 24 MHz přímo přes SMA konektor) a mnoho dalších maličkostí, jejich kompletní výčet je v obrázku \ref{rtl_better}
+\begin{figure}
+\caption{Výhody RTL-SDR blog V3 oproti běžným RTL DVB-T \cite{rtlsdrcom}}
+\includegraphics[width=1\textwidth]{./images/rtlsdr_v3_better.jpg}
+\label{rtl_better}
+\end{figure}
+\section{Raspberry Pi}
+\subsection{Displej}
+
+\section{Napájení}
+Vzhledem k potřebě fungování přehledového přijímače na baterky bylo nutné řešit napájení složitěji, než jen zapojením Raspberry Pi do USB nabíječky. Bylo potřeba zvolit správnou baterii, DC-DC měnič s výstupem 5V pro napájení Raspberry PI (A přes něj ostatních komponent), způsob nabíjení baterií, vypínač a propojení těchto komponent.\\
+ Jako zdroj energie jsem zvolil články typu 18650 Li-Ion. Je to stejný typ článků jako se používá v přenosných počítačích, elektromobilech, vaporizérech a power bankách. Využívá technologii Li-Ion a díky tomu netrpí paměťovým efektem jako starší Ni-Cd a má vysokou hustotu energie. K dispozici jsem měl články značky Samsung model ICR18650-26. Kapacita jednoho článku je 2,55 Ah a nominální napětí 3,7 V. Články jsem použil tři, vložil do zakoupeného držáku a zapojil paralelně. Dostal jsem tak baterii 1s3p s kapacitou 7,65 Ah a nomilnálním napětím 3,7 V (min 3V, max 4,2V) z čehož vyplývá kapacita ve watthodinách okolo 28 Wh.\\
+ Vzhledem k tomu, že Raspberry Pi vyžaduje napětí 5 V bylo potřeba napětí z baterie zvýšit na tuto hodnotu. Zároveň jsem potřeboval vyřešit jakým způsobem budu baterii nabíjet. Stejná napětí a problémy však řeší každá power banka a tak jsem se uchýlil k již připravenému řešení v podobě booster modulu určeného do powerbanky. Tyto moduly dokáží zvýšit napětí z baterie na 5V, ohlídat napětí na bateriích aby nekleslo pod 3V (při menších napětích dochází k poškození článků) a zároveň přri zapojení zdroje dokáží baterii nabíjet a ohlídat, že její napětí nepřesáhne hodnotu 4,2 V, nad kterou dochází k poškození článků a i případnému vzplanutí.\\
+ Vyzkoušel jem několik druhů (z Aliexpress se dají podobné moduly koupit za malé častky) a nakonec se rozhodl pro HCX-PCB-429. Tento modul nejen deklaruje maximální výstupní proud 2A, ale doopravdy ho i dosahuje, což se většině ostatních nepodařilo. Další jeho výhodou je, že při připojování a odpojování nabíječky nepřeruší dodávku elektřiny na 5 V výstupu, to u těchto modelů bohužel nebývá běžné. Jeho posledí výhodou oproti dalším vyhovujícím je jeho velikost, ostatní kvalitnější moduly byly navrhnuty pro powerbanky s dvěma výstupy a měli tím pádem větší rozměry. \\
+ Raspberry Pi samotné nemá žádný vypínač, musel jsem tedy přidat vlastní. Použil jsem jednoduchý kolébkový vypínač a umístil ho v obvodu až za booster modul, díky tomu lze baterii napájet i ve vypnutém stavu a spotřeba samotného modulu je minimální, je na neustálé připojení k baterii stavěn.\\
+ Samotné Raspberry Pi 3 má při plné zátěži spotřebu okolo 730 mA \cite{powerpi}, RTL-SDR má spotřebu okolo 280 mA \cite{rtlsdrcom}, displej má spotřebu menší než 400 mA \cite{powerLCD} dohromady tedy méně než 1410 mA což při 5 V voltech dává 7 W a přibližná doba na baterii tedy bude okolo 4 hodin.
+ 
+\section{Kryt}
+Abych z již představených jednotlivých komponent dokázal vyrobit přehledový přijímač, bylo potřeba je dohromady umístit do ochraného krytu. Přestože bývá pro účely závěrečných prací běžné sestrojit kryt z plexiskla s vyřezanými otvory, rozhodl jsem se jít jinou cestou - navrhnout a posléze na 3D tiskárně vytisknout kryt přizpůsobený na míru komponentům. \\
+Vzhledem k tomu, že jsem neměl mnoho předchozích zkušeností s návrhem 3D modelů, dal jsem na doporučení kolegy Jaroslava Bartoše, který se 3D tiskem zabývá a pro návrh zvolil CAD software Autodesk Fusion 360. V rámci studia mají studenti všech vzdělávacích institucí k dispozici licenci zdarma
+\subsection{Autodesk Fusion 360}
+Fusion 360 of Firmy autodesk je varianta jejich CAD programu zaměřená zejména na kolaboraci a na návrh modelů určenách pro výrobu, ať už pomocí 3D tiskáren nebo obrábění, soustružení, řezaní vodním paprskem, laserem či plazmou \cite{autodesk2018}. Umožňuje také simulaci 3D modelů, kde jsou k dispozici nástroje jako pro statické zatížení, tepelnou analýzu, optimalizaci tvaru a podobně. Aplikace vznikla již v roce 2013 a od té doby jsou neustále přidávány nové funkce. \\
+Princip celé aplikace je založen na cloudu, který je používán jako pro ukládání dat, tak pro náročnější výpočty. Samotná klientská aplikace je napsána v WebGL/HTML5 a je vidět snaha o maximální jednoduchost uživatelského prostředí. Kdo již někdy pracoval s jejím velkým příbuzným Autodesk Fusion Inventor, ten jistě najde hodně známých prvků. Podobně jako invertor také podporuje parametrické  i přímé modelování \cite{cadstudio}. \\
+Velkou výhodou, kterou jsem často využil při modelování komponent přijímače je také schopnost otevřít téměř libovolný formát 3D modelu, já jsem tak mohl importovat již hotové modely Raspberry Pi, Li-Ion článků nebo různých konektorů. Poslední velmi užitečnou funkcí je již v úvodu zmíněná podpora kolaborace, díky ní jsem mohl svůj návrh průběžně konzultovat s již zmíněným kolegou a provádět jeho úpravy tak aby šel výsledný model bez problému vytisknout.
+\begin{figure}
+\caption{Prostředí Autodesk Fusion 360 a navrhnutý model krytu}
+\includegraphics[width=1\textwidth]{./images/3dmodel.png}
+\label{3dmodel}
+\end{figure}
+\subsection{Model}
+Tvorbu modelu jsem započal vymodelováním všech komponent. Modeloval jsem je do různé úrovně detailu podle toho jak moc na jejich členění mohl záviset výsledný kryt. Například držak s Li-Ion články stačilo vymodelovat jako přibližný kvádr, do krytu jsem ho toiž jen vlepil na rovnou plochu. Oproti tomu Raspberry Pi které mělo mít některé konektory dostupné zvenku, bylo potřeba mít vymodelované do detailu, naštěstí jsem však našel velkmi podrobný model na internetu a vyhnul se tak zdlouhavé práci.\\
+Po vytvoření modelů komponent následovalo jejich poskládání tak aby všechny potřebné porty byly dostupné zvenku, výsledný kryt se vešel na tisknutelnou plochu tiskárny a také aby dva největší producenti tepla - RTL-SDR a Raspberry Pi nebyly hned vedle sebe. Jako poměrně náročné se ukázalo, zpřístupnění LAN a volných USB portů zároveň s uschováním veškerých propojení komponent uvnitř krytu. Ztohoto důvodu nemá kryt tvar kvádru, ale je na jedné straně vykousnutý. \\
+Výsledný kryt se skládá ze dvou částí. Ve vrchní části je zabudován displej a větráček a v dolní zbytek komponent. Ke spodní části bylo nutné ještě přilepit záslepku otvoru, který vznikl vykrojením původního kvádru. Záslepka byla vytištěna zvlášť, protože by ji bez opor nebylo možné vytisknout jako součást spodního ani horního dílu. Díly jsou spojeny šesti šrouby, celý kryt má tak velkou pevnost a působí robustně.
+
+
+\subsection{Tisk}
+O tisk se postaral můj kolega Jaroslav Bartoš. Použita byla tiskárna Průša MK2 a materíál petg. Tisk byl nastaven na nižší rychlost kvůli menší chybovosti a tisk vrchního dílu tak trval 6 hodin včetně záslepky a spodního 10 hodin. Vytisknutý kryt byl hned na první pokus použitelný bez větších úprav, jediný komponent co nešel zasadit bez úprav krytu byl displej jehož připravený výřez byl asi o pům milimetru menší, než displej samotný a bylo tak potřeba otvor trochu zvětšit.
+
+
+\section{Zapojení}
+Při zapojení se centrálním prvkem stalo Raspberry Pi a k němu jsou připojeny všechny ostatní komponenty. Konkrétní porty a dostupnost komponent a volných portů zvenku lze vyčíst z digramu na obrázku \ref{zapojení}.
+\begin{figure}
+\caption{Diagram zapojení a dostupnosti portů přehledového přijímače}
+\includegraphics[width=1\textwidth]{./images/diagramZapojeni.png}
+\label{zapojení}
+\end{figure}
+
+
+\chapter{Software}
+
+V této kapitole se budu věnovat veškerému software potřebnému k fungování přehledového přijímače ať už se bude jednat o SW vytvořený třetímy stranami nebo mnou. Nejprve shrnu požadavky, pak představím použitý software z nich vyplývající a nakonec nastíním architekturu celého systému, to jak jsou jednotlivé programy propojeny a jaká mají rozhraní.
+\section{Požadavky a z nich vyplývající software}
+Všechny požadavky vycházejí ze zadání diplomové práce. Hlavním požadavkem je přijmout a dekódovat zprávy vysílané pomocí technologií IoT a následně je zobrazit a to jak lokálně přímo na přehledovém přijímači, tak vzdáleně přes IP protokoly. Tento hlavní požadavek lze rozložit do jednotlivých částí.\\ 
+První část se týká příjmu zpráv z IoT zařízení z hlediska HW to obstarává RTL-SDR a použitý softwér ho tak musí umět ovládat a připravit přijaté I/Q vzorky pro dekódování, o to se postará knihovna librtlsdr a její utility které jsou součástí projektu rtl-sdr. Druhý požadavek tedy dekódování zpráv bude splněn pomocí toolkitu GNU Radio ve kterém bude přijatý signál demudolován a zprávy dekódovány.  Požadavek na zobrazení zpráv lokálně a vzdáleně jsem se rozhodl uspokojit zároveň a to pomocí webového uživatelského rozhraní založeného na microframeworku Flask a jeho rozšíření Flas-sockeIO zajišťující zpětnou vazbu uživatelského rozhraní a celého systému v reálném čase.\\
+
+\subsection{librtlsdr a její utility}
+Tato knihovna byla vyvinuta v rámci sofwarového projektu rtl-sdr od organizace Osmocom (Open source mobile comunications). Knihovna je jeho ústřední částí sloužící k ovládání a přístupu k RTL-SDR a v podstatě všechny uživatelské aplikace využívající RTL-SDR jí potřebují ke svému fungování. Tato knihovna závisí na další knihovně libusb, to je dáno použitím rozhraní USB pro připojení RTL-SDR k počítači \cite{osmocom}. Kromě librtlsdr projekt obsahuje také několik utilit pro použití v terminálu:
+\begin{description}
+\item[rtl\textunderscore fm]
+Přijímač FM vysílání využívající RTL-SDR. Dokáže RTL-SDR naladit na požadovanou frekvenci a jeho výstuem je zvuková stopa využitelná v terminálových přehrávačích.
+\item[rtl\textunderscore sdr]
+Tato utilita již produkuje přímo I/Q vzorky, dokáže je zapsat do souboru nebo na standartní výstup.
+\item[rtl\textunderscore test]
+Jak již název vypovídá slouží k testu funkčnosti knihovny librtlsdr.
+\item[rtl\textunderscore tcp]
+Tato utilita funguje stejě jako rtl\textunderscore sdr, proud I/Q vzorků však neposílá na standartní výstup nebo do souboru ale tvoří z něj TCP/IP stream. Toho využívám v práci pro distribuci vzorků do instancí GNU Radia.
+\end{description}
+
+Poslední utilitou, která patří do této sekce i když není přímo součástí rtl-sdr je rtl\textunderscore mus. Tento skript vytvořil Simonyi Károly \cite{rtlmus}. Jeho účel je vyřešit slabinu utility rtl\textunderscore tcp. Ta totiž dokáže posílat vzorky v jednu chvíli pouze jednomu klientu. Rtl\textunderscore mus tak zastoupí místo tohoto klienta a dále distribuuje prvky libovolnému množství koncových klientů.
+
+\subsection{GNU Radio}
+Gnu Radio jako takové je představené v samostatné kapitole v první části této práce. V této sekci se budu soustředit již na konkrétní flowgrafy vytvořené pro zpracování jednotlivých IoT technologií.
+\subsubsection{LoRa}
+Flowgraf pro technologii LoRa je na první pohled velmi jednoduchý, skládá se jen ze tří bloků: Osmocom zdroje (Osmocom source), LoRa receiveru a koncového bloku pro odesílání zpráv (Message Socket Sink). Tato je jednoduchost je jen zdánlivá, protože LoRa receiver je ve skutečnosti jen kontejner pro bloky nižší úrovně zastávající skutečné zpracování signálu. \\
+Osmocom zdroj není standartní výbavou GNU Radia. Přidán je pomocí knihovny gr-osmosdr, tu stejně jako knihovnu librtlsdr vyvinula organizace Osmocom a kromě RL-SDR podporuje většinu dalších běžných SDR. Ve flowgrafu zastává funkci příjmu I/Q vzorků. V rámci jeho nastavení je možné definovat zdroj signálu, ať je to přímo nějaké z podporovaných SDR nebo TCP/IP stream. Dále je možné konfigurovat rádiovou frekvenci, vzorkovací fekvenci, zisk SDR a podobně. \\
+Druhé dva bloky byly do gnu rádia přidány díky knihovně gr-lora. Tato knihovna byla napsána Pieterem Robynsnem jedním z autorů \cite{gr-lora2018} a její zprovoznění na Raspberry Pi se ukázalo oříškem, protože vyžaduje 64-bitovou architekturu, ale o tom se více zmíním v sekci o operačním systému pro Raspberry Pi. Knihovnu jsem zároveň musel upravit ve verzi od Robynsna totiž spolu s dekódovanou zprávou neposílá parametry přijatého rámce jako je SNR, fekvence, faktor rozprostření a podobně. Úprava se na první pohled jevila jednoduchá, jelikož knihovna již měla připravenou strukturu pro přidání těchto paramatrů ve formě hlavičky k dekódoavaným datům. Bohužel však v metodě používané pro výpis dekódovaných dat byl bug, který způsoboval korupci parametrů odesílaných do hlavičky. Tuto metodu není nutné používat pokud je použit blok pro odeslání zpráv a tak byla oprava pro účely této práce jednoduchá, ale přijít na to co chybu způsobuje zabralo mnoho hodin debugování. A o výsledku budu informovat autora, protože si myslím, že tento bug byl důvod proč přidání parametrů do hlavičky neprovedl on sám.\\
+Blok receiver je složen ze třech bloků channelizer, controler a debugger. Tyto bloky implementují postup popsaný v kapitole \ref{sec:softdem}. V rámci jeho konfigurace je nutné nastavit požadovaný kanál, faktor rozprostření a rozlišovací práh. Jeho výstupem je již dekódovaný rámec, který lze pomocí posledního bloku Message Socket Sink odeslat do dalších aplikací.
+\begin{figure}
+\caption{Flowgraf pro příjem LoRa}
+\includegraphics[width=1\textwidth]{./images/loraGRC.png}
+\label{loraGRC}
+\end{figure}
+\subsubsection{Sigfox}
+Tento flowgraf byl původně součástí upravené verze programu \href{https://scapy.net}{Scapy} nazvané scapy-radio, která do něj přidávala podporu pro protokoly Bluetooth, Zigbee, Zwave a konečne Sigfox \cite{cybertools2016}. Obsahuje dva bloky, které nejsou standartní součístí GNU radia, jinak je složen z již připravených bloků.\\
+První z nestandartní blok se jmenuje Sigfox DetectionPeak a je implementován v pythonu. Jeho účel je detekovat frekvence nosných třech opakování vysílání Sigfox a tyto fekvence předat do třech samostatných větví flowgrafu, každá demodulující jen jedno vysílání. Blok má dva parametry, paramater threshold udává o kolik se musí lišit následující detekovaná frekvence aby jí bylo možné považovat za následující opakování a parametr scale pomáhá normalizovat fekvenci.\\
+Blok Sigfox PacketSink dekóduje demodulovaný signál. Je implementován v C++ a má dvě fáze. V první fázi detekuje preambuli a jakmile narazí na F.SYNC následovaný F.TYPE přečte ho a zjistí z něho délku zprávy, druhé části dekódu následujících několik bajtů, dle délky indikované v preambuli. Tato data přidá k preambuli a vytvoří paket.
+\begin{figure}
+\caption{Flowgraf pro příjem Sigfox}
+\includegraphics[width=1\textwidth]{./images/sigfoxGRC.png}
+\label{sigfoxGRC}
+\end{figure}
+
+\subsection{Flask a Flask-socketIO}
+
+
+\section{Architektura}
+Softwarovou výbavu přehledového přijémače lze rozdělit do několika bloků. Ústřední částí je kontrolní aplikace, která spouští, propojuje a ovládá ostatní bloky. Druhý blok se věnuje přímo modulu RTL-SDR, zabývá se jeho ovládáním a distribucí digitalizovaných vzorků rádiového spektra. Další blok tvoří skripty využívající GNU Radio, ty zpracovávají vzorky z bloku RTL-SDR a po dekódování rámce je předávají kontrolnímu bloku. Posledním blokem je samotný klient, který ve webovém prohlížeči zobrazuje přijaté rámce a umožňuje změnu nastavení. Tyto bloky fungují samostatně a tak lze každý provozovat na jiném stroji, musí však být zajištěna možnost jejich vzájemné komunikace a kompatibilní operační systém.
+
+
+
+\section{Třídy IoT technologií}
+Jednotlivé standardy IoT podoporované přehledovým přijímačem jsou dekódované v těchto třídách 
+\section{kontrolní apliakce}
+Tento blok jsem implementoval v jazyce python a skládá se z několika souborů.
+\subsection{webserver.py}
+Webserver.py je hlavní skript tohoto bloku. Jeho kostru tvoří microframework Flask a jeho rozšíření Flask-socketIO. Pomocí něho vytvářím server který publikuje index.html. Dále v tomto skriptu vytvářím instance tříd definujích jednotlivé podporované standardy IoT. bibcit
+\subsection{index.html}
+
+
+ Pro dekodovani zprav vyuziva instance tříd  pro jednotlivé technologie. Tyto třidy je možné psát manuálně nebo generovat pomocí grafického prostředí gnuradio-companion. Já jsem bloky připravil 
+
+
+
+\chapter{Výsledky}
 \chapter{Závěr}
 
-Lorep ipsum \cite{doe}
 
-\begin{thebibliography}{1}
-
-\bibitem{doe} J. Doe. \emph{Book on foobar.} Publisher X,
- 2300.
-
-\end{thebibliography}
-
+\printbibliography
 \end{document}
+V
