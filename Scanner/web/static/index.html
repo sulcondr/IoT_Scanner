@@ -28,7 +28,7 @@
 <h5 style='color: #ccc;font-size: 30px;'>Settings not updated yet..</h5>
 <div class="log"></div>
 
-
+<div class="settings">
 <form id=switch action="" method="POST">
     Sigfox
     <input type="radio" name="sigfox" value="True"/> On <br/>
@@ -63,7 +63,7 @@
 
     <input type="submit"/>
 </form>
-
+</div>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
@@ -106,7 +106,7 @@
 
     socket.on('gnu radio', function (pdu) {
         console.log(pdu);
-        $('#receive_table').append('<tr><td>LoRa</td><td>' + pdu.snr + '</td><td>' + pdu.freq + '</td>' +
+        $('#receive_table').append('<tr><td>' + pdu.technology + '</td><td>' + pdu.snr + '</td><td>' + pdu.freq + '</td>' +
             '<td>'+pdu.bw+'</td><td>'+pdu.sf+'</td><td>'+pdu.length+'</td><td>'+pdu.payload+'</td></tr>')
     })
     socket.on('log', function (message) {

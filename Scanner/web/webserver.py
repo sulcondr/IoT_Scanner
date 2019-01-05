@@ -24,23 +24,28 @@ from flask_socketio import SocketIO, emit
 from threading import Thread
 import socket
 import time
-import zmq
-import pmt
+import atexit
+import configparser
+import argparse
 import binascii
 import struct
+import eventlet
+eventlet.monkey_patch()
 from lora_receive_realtime import lora_receive_realtime
-from sigfox_receive_realtime import sigfox_receive_realtime
-
-HTTP_PORT = 5000
-UDP_IP = "127.0.0.1"
-UDP_PORT = 5005
-RTL_ADDRESS = '192.168.0.23'
-SETTINGS = {'lora': 'False', 'sigfox': 'False', 'channel': [], 'sf': []}
-LORA_SESSIONS = {}
+#from sigfox_receive_realtime import sigfox_receive_realtime
 
 app = Flask(__name__, static_url_path="")
 # app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app)
+
+
+def parse_cli():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("env", help="Enviorment SCANNER, PC, REMOMTE")
+    args = parser.parse_args()
+
+    return args
 
 
 def background_thread():
@@ -48,9 +53,10 @@ def background_thread():
     sock = socket.socket(socket.AF_INET,  # Internet
                          socket.SOCK_DGRAM)  # UDP
     sock.bind((UDP_IP, UDP_PORT))
-
+    print "UDP listening on port", UDP_PORT
     while True:
         recv, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
+        print recv
         data = bytearray(recv)
         parsed = parse_frame(data)
         message = make_message(parsed)
@@ -60,12 +66,13 @@ def background_thread():
 
 def make_message(parsed):
     frame = {
+        'technology': 'LoRa',
         'freq': parsed[3],
         'bw': parsed[4],
         'sf': parsed[5],
         'snr': parsed[9] / 100.0,
         'length': parsed[11],
-        'payload': parsed[14]
+        'payload': str(parsed[14]).decode('latin-1').encode("utf-8")
     }
     print frame
     #socketio.emit('gnu_radio', frame)
@@ -102,58 +109,58 @@ def update_local_settings(settings):
         SETTINGS[key] = settings[key]
 
 
-def create_lora_session(channel, sf):
-    if channel not in LORA_SESSIONS:
-        LORA_SESSIONS[channel] = {}
-    if sf not in LORA_SESSIONS[channel]:
-        try:
-            LORA_SESSIONS[channel][sf] = lora_receive_realtime(channel, sf, UDP_PORT)
-            print LORA_SESSIONS
-        except RuntimeError as error:
-            print('Failed to start LoRa receiver: {}'.format(error))
-        # LORA_SESSIONS[channel][sf].start()
-        print 'session on channel {} and SF {} created'.format(channel, sf)
-    else:
-        print 'session already exists'
-
 
 def stop_lora_session(channel, sf):
     print 'stopping session ({}, {})'.format(channel, sf)
     LORA_SESSIONS[channel][sf].stop()
     LORA_SESSIONS[channel][sf].wait()
+    del LORA_SESSIONS[channel][sf]
+    time.sleep(1)
+    print 'session stopped', LORA_SESSIONS
 
 
 def start_lora_session(channel=868100000, sf=7):
-    # channel = int(channel)
-    # sf = int(sf)
-    create_lora_session(channel, sf)
+    if channel not in LORA_SESSIONS:
+        LORA_SESSIONS[channel] = {}
+    if sf not in LORA_SESSIONS[channel]:
+        try:
+            LORA_SESSIONS[channel][sf] = lora_receive_realtime(channel, sf, UDP_PORT, RTL_ADDRESS)
+            print LORA_SESSIONS
+            print 'session on channel {} and SF {} created'.format(channel, sf)
+        except RuntimeError as error:
+            print('Failed to start LoRa receiver: {}'.format(error))
     try:
         LORA_SESSIONS[channel][sf].start()
+        print 'session on channel {} and SF {} started'.format(channel, sf)
     except RuntimeError as error:
         if error != 'top_block::start: top block already running or wait() not called after previous stop()':
             print error
-        print 'session already started'
+        else:
+            print 'session already started'
 
 
 def resolve_settings(settings):
     print('received settings: ' + str(settings))
     if settings['sf'] and settings['channel']:
+        if ONE_SESSION and ((len(settings['sf']) > 1) or (len(settings['channel']) > 1)):
+            message = 'Sorry only one channel and one sf allowed at once on SCANNER'
+            return message
         channel_list = [int(x) for x in settings['channel']]
         sf_list = [int(x) for x in settings['sf']]
-        for channel in LORA_SESSIONS:
+        for channel in LORA_SESSIONS.keys():
             print type(channel), type(channel_list[0])
-            if channel not in channel_list:
-                for sf in LORA_SESSIONS[channel]:
-                    print LORA_SESSIONS
+
+            for sf in LORA_SESSIONS[channel].keys():
+                if channel not in channel_list:
                     stop_lora_session(channel, sf)
-            else:
-                for sf in LORA_SESSIONS[channel]:
+                else:
                     if sf not in sf_list:
                         stop_lora_session(channel, sf)
         for channel in channel_list:
-            for sf in sf_list:
-                start_lora_session(channel, sf)
-                update_local_settings({'lora': 'True'})
+                for sf in sf_list:
+                    start_lora_session(channel, sf)
+                    update_local_settings({'lora': 'True'})
+        update_local_settings(settings)
         message = 'LORA: Started listening on channel(s) {} and decoding SF {}'.format(settings['channel'],
                                                                                        settings['sf'])
         return message
@@ -163,11 +170,10 @@ def resolve_settings(settings):
 
 
 def turn_off_lora():
-    for channel in LORA_SESSIONS:
-        for sf in LORA_SESSIONS[channel]:
-            LORA_SESSIONS[channel][sf].stop()
-            LORA_SESSIONS[channel][sf].wait()
-            print 'turning off LORA ch={} sf={}'.format(channel, sf)
+    for channel in LORA_SESSIONS.keys():
+        for sf in LORA_SESSIONS[channel].keys():
+            stop_lora_session(channel, sf)
+
 
 
 @app.route("/")
@@ -189,7 +195,6 @@ def disconnect():
 @socketio.on('settings')
 def change_settings(settings, methods=['GET', 'POST']):
     message = resolve_settings(settings)
-    update_local_settings(settings)
     socketio.emit('settings_update', SETTINGS)
     socketio.emit('log', message)
 
@@ -223,13 +228,43 @@ def handle_switch(settings, methods=['GET', 'POST']):
     socketio.emit('settings_update', SETTINGS)
 
 
+def clean_up_prevous():
+    rtl_mus = subprocess.Popen('lsof -n -i4TCP:7373 | grep LISTEN | awk \'{ print $2 }\' | xargs kill', shell=True)
+    rtl_mus.wait()
+    rtl_tcp = subprocess.Popen('lsof -n -i4TCP:1234 | grep LISTEN | awk \'{ print $2 }\' | xargs kill -9', shell=True)
+    rtl_tcp.wait()
+
+
 if __name__ == "__main__":
+    env = parse_cli().env
+    print env
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
+    RTL_ADDRESS = str(config.get(env, 'RTL_ADDRESS'))
+    GET_RTL_ADDRESS = config.getboolean(env, 'GET_RTL_ADDRESS')
+    ONE_SESSION = config.getboolean(env, 'ONE_SESSION')
+    RUN_TCP_MUS = config.getboolean(env, 'RUN_TCP_MUS')
+    HTTP_PORT = 5000
+    UDP_IP = "127.0.0.1"
+    UDP_PORT = 5005
+    SETTINGS = {'lora': 'False', 'sigfox': 'False', 'channel': [], 'sf': []}
+    LORA_SESSIONS = {}
+
+    if GET_RTL_ADDRESS:
+        RTL_ADDRESS = 'rtl_tcp' + raw_input("Please input address for rtl_mus in format address:port")
+
+    if RUN_TCP_MUS:
+        clean_up_prevous()
+        rtl_tcp = subprocess.Popen(['rtl_tcp', '-f', '868000000', '-g', '10', '-s', '1000000'])
+        time.sleep(1)
+        subprocess.Popen(['./rtl_mus/rtl_mus.py'])
+        # subprocess.Popen('exec ncat localhost 1234 | ncat -4l 7373 -k --send-only --allow 127.0.0.1', shell=True)
+
+
     thread1 = Thread(target=background_thread)
     thread1.daemon = True
     thread1.start()
 
-    # subprocess.Popen(['rtl_tcp', '-f', '868000000', '-g',  '10', '-s', '1000000'])
-    # subprocess.Popen('exec ncat localhost 1234 | ncat -4l 7373 -k --send-only --allow 127.0.0.1', shell=True)
-    print 'debug -------------------'
 
     socketio.run(app, host="0.0.0.0", port=HTTP_PORT, debug=False)
