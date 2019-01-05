@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=IoT Scanner
+Exec=./startSCANNER.sh
+Type=Application
+Terminal=true

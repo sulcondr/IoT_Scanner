@@ -22,6 +22,7 @@ import subprocess
 from flask import Flask, request
 from flask_socketio import SocketIO, emit
 from threading import Thread
+from numpy import median
 import socket
 import time
 import atexit
@@ -124,7 +125,7 @@ def start_lora_session(channel=868100000, sf=7):
         LORA_SESSIONS[channel] = {}
     if sf not in LORA_SESSIONS[channel]:
         try:
-            LORA_SESSIONS[channel][sf] = lora_receive_realtime(channel, sf, UDP_PORT, RTL_ADDRESS)
+            LORA_SESSIONS[channel][sf] = lora_receive_realtime(channel, sf, UDP_PORT, RTL_ADDRESS, DECIMATION, CAPTURE_FREQ)
             print LORA_SESSIONS
             print 'session on channel {} and SF {} created'.format(channel, sf)
         except RuntimeError as error:
@@ -147,6 +148,8 @@ def resolve_settings(settings):
             return message
         channel_list = [int(x) for x in settings['channel']]
         sf_list = [int(x) for x in settings['sf']]
+        CAPTURE_FREQ = median(channel_list)
+        print CAPTURE_FREQ
         for channel in LORA_SESSIONS.keys():
             print type(channel), type(channel_list[0])
 
@@ -250,6 +253,11 @@ if __name__ == "__main__":
     UDP_PORT = 5005
     SETTINGS = {'lora': 'False', 'sigfox': 'False', 'channel': [], 'sf': []}
     LORA_SESSIONS = {}
+    DECIMATION = 1
+    CAPTURE_FREQ = 868e6
+
+    if ONE_SESSION:
+        DECIMATION = 2
 
     if GET_RTL_ADDRESS:
         RTL_ADDRESS = 'rtl_tcp' + raw_input("Please input address for rtl_mus in format address:port")

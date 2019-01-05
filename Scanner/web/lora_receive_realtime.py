@@ -19,7 +19,7 @@ import time
 
 class lora_receive_realtime(gr.top_block):
 
-    def __init__(self, target_freq, sf, udp_port, rtl_address='rtl_tcp=localhost:7373'):
+    def __init__(self, target_freq, sf, udp_port, rtl_address='rtl_tcp=localhost:7373', decimation=1, capture_freq=868e6):
         gr.top_block.__init__(self, "Lora Receive Realtime")
 
         ##################################################
@@ -32,8 +32,8 @@ class lora_receive_realtime(gr.top_block):
         self.samp_rate = samp_rate = 1e6
         self.rtl_address = rtl_address
         self.downlink = downlink = False
-        self.decimation = decimation = 1
-        self.capture_freq = capture_freq = 868e6
+        self.decimation = decimation
+        self.capture_freq = capture_freq
         self.bw = bw = 125000
 
         ##################################################
