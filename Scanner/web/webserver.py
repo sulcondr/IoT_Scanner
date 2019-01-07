@@ -41,14 +41,16 @@ socketio = SocketIO(app)
 
 
 def parse_cli():
+    """parses argument needed for choosing the right enviroment"""
     parser = argparse.ArgumentParser()
-    parser.add_argument("env", help="Enviorment SCANNER, PC, REMOMTE")
+    parser.add_argument("ENV", help="Enviorment SCANNER, PC, REMOMTE")
     args = parser.parse_args()
 
     return args
 
 
 def background_lora():
+    """receives UDP frames from LoRa GNU radio session"""
     # time.sleep(15)
     sock = socket.socket(socket.AF_INET,  # Internet
                          socket.SOCK_DGRAM)  # UDP
@@ -65,6 +67,7 @@ def background_lora():
 
 
 def background_sigfox():
+    """receives UDP frames from Sigfox GNU radio session"""
     # time.sleep(15)
     sock = socket.socket(socket.AF_INET,  # Internet
                          socket.SOCK_DGRAM)  # UDP
@@ -78,6 +81,7 @@ def background_sigfox():
 
 
 def make_message(parsed):
+    """makes dictionary from the parsed data"""
     frame = {
         'technology': 'LoRa',
         'freq': parsed[3],
@@ -92,7 +96,9 @@ def make_message(parsed):
 
 
 def parse_frame(data):
+    """parses LoRa frame received from GNU Radio"""
     test = binascii.hexlify(data)
+    # defines the format of received LoRa frame header
     tap_header_format = 'bbhiibbbbib'
     phy_header_format = 'bbb'
     header_format = tap_header_format + phy_header_format
@@ -100,9 +106,10 @@ def parse_frame(data):
     header_len = struct.calcsize(header_format)
     data_len = len(data)
     if header_len > data_len:
-        print 'bad packet received'
+        print 'packet too short'
         return (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,)
     else:
+        # defines the frame format based on header and length of frame
         data_format = header_format + str(data_len - header_len) + 's'
         print data_format
         # print "tap header: ", header_len
@@ -161,17 +168,22 @@ def start_sigfox():
 
 
 def resolve_settings(settings):
+    """parses LoRa settings and sends the necessary commands to update it"""
     print('received settings: ' + str(settings))
+    # Lora settings cannot be uodated while Sigfox is on as it would mess up its radio receiver
     if SETTINGS['sigfox'] == 'True':
         return "LoRa and Sigfox cannot be turned on at the same time"
+    # at least one channel and one sf has to be chosen at all times
     if settings['sf'] and settings['channel']:
         if ONE_SESSION and ((len(settings['sf']) > 1) or (len(settings['channel']) > 1)):
             message = 'Sorry only one channel and one sf allowed at once on SCANNER'
             return message
         channel_list = [int(x) for x in settings['channel']]
         sf_list = [int(x) for x in settings['sf']]
+        # takes the median freq of all selected channels so there is the biggest chance they all fall in BW of receiver
         CAPTURE_FREQ = median(channel_list)
         print CAPTURE_FREQ
+        # stops all session that are not in the newest settings
         for channel in LORA_SESSIONS.keys():
             print type(channel), type(channel_list[0])
 
@@ -181,6 +193,7 @@ def resolve_settings(settings):
                 else:
                     if sf not in sf_list:
                         stop_lora_session(channel, sf)
+        # starts or updates all session specified in the newest settings
         for channel in channel_list:
             for sf in sf_list:
                 start_lora_session(channel, sf)
@@ -201,6 +214,7 @@ def turn_off_lora():
 
 
 def turn_off_sigfox():
+
     SIGFOX_SESSIONS['sigfox'].stop()
     SIGFOX_SESSIONS['sigfox'].wait()
     del SIGFOX_SESSIONS['sigfox']
@@ -209,6 +223,10 @@ def turn_off_sigfox():
 
 @app.route("/")
 def index():
+    """
+    makes index.html avaiable at the root address of the server
+    :return:
+    """
     return app.send_static_file("index.html")
 
 
@@ -225,6 +243,14 @@ def disconnect():
 
 @socketio.on('settings')
 def change_settings(settings, methods=['GET', 'POST']):
+    """
+    Is called when socket io message from topic settings is received
+    It send the message to resolve and once it is resolved it sends messages back to the client updating his log
+    and displayed settings
+    :param settings:
+    :param methods:
+    :return:
+    """
     message = resolve_settings(settings)
     socketio.emit('settings_update', SETTINGS)
     socketio.emit('log', message)
@@ -232,6 +258,13 @@ def change_settings(settings, methods=['GET', 'POST']):
 
 @socketio.on('switch')
 def handle_switch(settings, methods=['GET', 'POST']):
+    """
+    Is called when socket io meassege from topic switch is received
+    It parses the received message and based on content turns of and IoT technologies
+    :param settings:
+    :param methods:
+    :return:
+    """
     print(settings)
     message = ''
     if not ((settings['lora'] == "True") and (settings['sigfox'] == "True")):
@@ -262,6 +295,11 @@ def handle_switch(settings, methods=['GET', 'POST']):
 
 
 def clean_up_prevous():
+    """
+    Kills processes listening on port 7373 and 1234, normally these would be processes left
+    there from previous run of this script
+    :return:
+    """
     rtl_mus = subprocess.Popen('lsof -n -i4TCP:7373 | grep LISTEN | awk \'{ print $2 }\' | xargs kill', shell=True)
     rtl_mus.wait()
     rtl_tcp = subprocess.Popen('lsof -n -i4TCP:1234 | grep LISTEN | awk \'{ print $2 }\' | xargs kill -9', shell=True)
@@ -271,29 +309,33 @@ def clean_up_prevous():
 if __name__ == "__main__":
     env = parse_cli().env
     print env
+    # loads config based on eviroment
     config = configparser.ConfigParser()
     config.read('config.ini')
 
-    RTL_ADDRESS = str(config.get(env, 'RTL_ADDRESS'))
-    GET_RTL_ADDRESS = config.getboolean(env, 'GET_RTL_ADDRESS')
-    ONE_SESSION = config.getboolean(env, 'ONE_SESSION')
-    RUN_TCP_MUS = config.getboolean(env, 'RUN_TCP_MUS')
-    HTTP_PORT = 5000
-    UDP_IP = "127.0.0.1"
-    UDP_LORA = 5005
-    UDP_SIGFOX = '5006'
-    SETTINGS = {'lora': 'False', 'sigfox': 'False', 'channel': [], 'sf': []}
-    LORA_SESSIONS = {}
-    SIGFOX_SESSIONS = {}
-    DECIMATION = 1
-    CAPTURE_FREQ = 868e6
+    RTL_ADDRESS = str(config.get(env, 'RTL_ADDRESS'))               # address where TCP stream of IQ data can be found
+    GET_RTL_ADDRESS = config.getboolean(env, 'GET_RTL_ADDRESS')     # should the addresse be asked as input from user
+    ONE_SESSION = config.getboolean(env, 'ONE_SESSION')             # is receiver limimted per one session at the time?
+    RUN_TCP_MUS = config.getboolean(env, 'RUN_TCP_MUS')             # should rtl_tcp and rtl_mus be run locally?
+    HTTP_PORT = 5000                                                # port on which the interface is shown
+    UDP_IP = "127.0.0.1"                                            # address to be bound be UDP rececivers
+    UDP_LORA = 5005                                                 # port for LoRa receiver
+    UDP_SIGFOX = '5006'                                             # port for Sigfox receiver
+    SETTINGS = {'lora': 'False', 'sigfox': 'False', 'channel': [], 'sf': []}    # settings holder with initial settings
+    LORA_SESSIONS = {}                                              # holder for LoRa session
+    SIGFOX_SESSIONS = {}                                            # holder for Sigfox sessions
+    DECIMATION = 1                                                  # decimation factor
+    CAPTURE_FREQ = 868e6                                            # initial frequency set on RTL_SDR
 
+    # sets higher decimation factor for SCANNER enviorment
     if ONE_SESSION:
-        DECIMATION = 2
+        DECIMATION = 4
 
+    # gets rtl stream address for REMOTE env
     if GET_RTL_ADDRESS:
         RTL_ADDRESS = 'rtl_tcp' + raw_input("Please input address for rtl_mus in format address:port")
 
+    # starts rtl_tcp and rtl_mus for PC env
     if RUN_TCP_MUS:
         clean_up_prevous()
         rtl_tcp = subprocess.Popen(['rtl_tcp', '-f', '868000000', '-g', '10', '-s', '1000000'])
@@ -301,6 +343,7 @@ if __name__ == "__main__":
         subprocess.Popen(['./rtl_mus/rtl_mus.py'])
         # subprocess.Popen('exec ncat localhost 1234 | ncat -4l 7373 -k --send-only --allow 127.0.0.1', shell=True)
 
+    # starting threads for UDP rreceivers
     thread1 = Thread(target=background_lora)
     thread1.daemon = True
     thread1.start()
@@ -308,5 +351,5 @@ if __name__ == "__main__":
     thread2 = Thread(target=background_sigfox)
     thread2.daemon = True
     thread2.start()
-
+    # starting flask
     socketio.run(app, host="0.0.0.0", port=HTTP_PORT, debug=False)
